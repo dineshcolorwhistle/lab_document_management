@@ -2,6 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .ldm-card {
+    @apply rounded-2xl border border-[#9C9F9F]/45 bg-white/70 p-6 shadow-[0_20px_70px_-40px_rgba(53,45,54,0.35)] backdrop-blur;
+  }
+
+  .ldm-input {
+    @apply w-full rounded-xl border border-[#9C9F9F]/55 bg-white/70 px-3 py-2 text-sm text-[#352D36] placeholder:text-[#909493] shadow-sm outline-none transition focus:border-[#352D36]/60 focus:ring-2 focus:ring-[#7D7980]/25;
+  }
+
+  .ldm-btn {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .ldm-btn-primary {
+    @apply bg-[#352D36] text-[#F7F6F2] hover:bg-[#3f3441];
+  }
+
+  .ldm-btn-secondary {
+    @apply border border-[#9C9F9F]/55 bg-white/70 text-[#352D36] hover:bg-white;
+  }
+
+  .ldm-btn-ghost {
+    @apply bg-transparent text-[#352D36] hover:bg-white/60;
+  }
+
+  .ldm-alert {
+    @apply rounded-xl border px-3 py-2;
+  }
+
+  .ldm-alert-info {
+    @apply border-[#9C9F9F]/45 bg-[#F7F6F2] text-[#352D36];
+  }
+
+  .ldm-alert-success {
+    @apply border-[#909493]/40 bg-white/60 text-[#352D36];
+  }
+
+  .ldm-alert-warning {
+    @apply border-amber-200 bg-amber-50 text-amber-900;
+  }
+
+  .ldm-alert-danger {
+    @apply border-red-200 bg-red-50 text-red-800;
+  }
+}
+
 /* App-wide base styles (keep minimal; prefer Tailwind utilities). */
 html,
 body,
@@ -10,5 +56,5 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900;
+  @apply bg-[#F7F6F2] text-[#352D36];
 }

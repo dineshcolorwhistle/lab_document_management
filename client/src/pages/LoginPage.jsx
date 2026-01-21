@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../services/auth'
 import { setToken } from '../services/token'
+import { AuthShell } from '../components/AuthShell'
+import { Alert } from '../components/ui/Alert'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -26,51 +30,47 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border bg-white p-6">
-      <h1 className="text-lg font-semibold">Login</h1>
-      <p className="mt-2 text-sm text-slate-600">Sign in to continue.</p>
-
-      <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+    <AuthShell title="Sign in" subtitle="Welcome back. Please enter your details.">
+      <form className="space-y-4" onSubmit={onSubmit}>
         <div>
-          <label className="text-sm font-medium text-slate-700">Email</label>
-          <input
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+          <label className="text-sm font-medium text-[#352D36]">Email</label>
+          <Input
+            className="mt-1"
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@company.com"
             required
           />
         </div>
 
         <div>
-          <label className="text-sm font-medium text-slate-700">Password</label>
-          <input
-            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+          <label className="text-sm font-medium text-[#352D36]">Password</label>
+          <Input
+            className="mt-1"
             type="password"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Your password"
             required
           />
         </div>
 
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <Alert variant="danger">{error}</Alert> : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-        >
+        <Button className="w-full" type="submit" disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
+        </Button>
 
-      <div className="mt-4 text-sm">
-        <Link className="font-medium text-blue-600" to="/forgot-password">
-          Forgot password?
-        </Link>
-      </div>
-    </div>
+        <div className="flex items-center justify-between text-sm">
+          <Link className="font-medium text-[#352D36] underline-offset-4 hover:underline" to="/forgot-password">
+            Forgot password?
+          </Link>
+          <span className="text-xs text-[#909493]">Secure access with RBAC</span>
+        </div>
+      </form>
+    </AuthShell>
   )
 }

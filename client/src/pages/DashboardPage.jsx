@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { me } from '../services/auth'
 import { clearToken } from '../services/token'
+import { Card } from '../components/ui/Card'
+import { Button } from '../components/ui/Button'
+import { Alert } from '../components/ui/Alert'
 
 export function DashboardPage() {
   const [state, setState] = useState({ loading: true, user: null, error: null })
@@ -27,37 +30,41 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border bg-white p-6">
-        <h1 className="text-lg font-semibold">Dashboard</h1>
+      <Card>
+        <h1 className="text-lg font-semibold text-[#352D36]">Dashboard</h1>
         {state.loading ? (
-          <p className="mt-2 text-sm text-slate-600">Loading…</p>
+          <p className="mt-2 text-sm text-[#7D7980]">Loading…</p>
         ) : state.user ? (
-          <div className="mt-3 text-sm text-slate-700">
-            <div>
-              <span className="font-medium">Name:</span> {state.user.name}
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-[#9C9F9F]/40 bg-white/50 p-4">
+              <div className="text-xs font-medium text-[#909493]">Name</div>
+              <div className="mt-1 text-sm font-semibold text-[#352D36]">{state.user.name}</div>
             </div>
-            <div>
-              <span className="font-medium">Email:</span> {state.user.email}
+            <div className="rounded-xl border border-[#9C9F9F]/40 bg-white/50 p-4">
+              <div className="text-xs font-medium text-[#909493]">Role</div>
+              <div className="mt-1 text-sm font-semibold text-[#352D36]">{state.user.role}</div>
             </div>
-            <div>
-              <span className="font-medium">Role:</span> {state.user.role}
+            <div className="rounded-xl border border-[#9C9F9F]/40 bg-white/50 p-4 sm:col-span-2">
+              <div className="text-xs font-medium text-[#909493]">Email</div>
+              <div className="mt-1 text-sm font-semibold text-[#352D36]">{state.user.email}</div>
             </div>
           </div>
         ) : (
-          <p className="mt-2 text-sm text-red-600">{state.error}</p>
+          <div className="mt-3">
+            <Alert variant="danger">{state.error}</Alert>
+          </div>
         )}
-      </div>
+      </Card>
 
-      <button
-        type="button"
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white"
+      <Button
+        variant="secondary"
         onClick={() => {
           clearToken()
           window.location.href = '/login'
         }}
       >
         Logout
-      </button>
+      </Button>
     </div>
   )
 }

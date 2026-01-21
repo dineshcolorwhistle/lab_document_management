@@ -1,6 +1,10 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { resetPassword } from '../services/auth'
+import { AuthShell } from '../components/AuthShell'
+import { Alert } from '../components/ui/Alert'
+import { Button } from '../components/ui/Button'
+import { Input } from '../components/ui/Input'
 
 export function ResetPasswordPage() {
   const navigate = useNavigate()
@@ -30,56 +34,56 @@ export function ResetPasswordPage() {
   const missingToken = !token
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border bg-white p-6">
-      <h1 className="text-lg font-semibold">Reset password</h1>
-      <p className="mt-2 text-sm text-slate-600">Choose a new password for your account.</p>
-
+    <AuthShell
+      title="Choose a new password"
+      subtitle="Set a strong password to protect your account."
+      footer={
+        <div className="flex items-center justify-between text-sm">
+          <Link className="font-medium text-[#352D36] underline-offset-4 hover:underline" to="/login">
+            Back to login
+          </Link>
+          <Link
+            className="font-medium text-[#352D36] underline-offset-4 hover:underline"
+            to="/forgot-password"
+          >
+            Request a new link
+          </Link>
+        </div>
+      }
+    >
       {missingToken ? (
-        <div className="mt-6 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          Missing reset token. Please request a new reset link.
-        </div>
+        <Alert variant="warning" title="Missing token">
+          <div className="text-sm">
+            Please request a new reset link and open it from your email.
+          </div>
+        </Alert>
       ) : done ? (
-        <div className="mt-6 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">
-          Password updated. Redirecting to login…
-        </div>
+        <Alert variant="success">Password updated. Redirecting to login…</Alert>
       ) : (
-        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+        <form className="space-y-4" onSubmit={onSubmit}>
           <div>
-            <label className="text-sm font-medium text-slate-700">New password</label>
-            <input
-              className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+            <label className="text-sm font-medium text-[#352D36]">New password</label>
+            <Input
+              className="mt-1"
               type="password"
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
+              placeholder="Minimum 8 characters"
               required
             />
-            <p className="mt-1 text-xs text-slate-500">Minimum 8 characters.</p>
+            <p className="mt-1 text-xs text-[#7D7980]">Minimum 8 characters.</p>
           </div>
 
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error ? <Alert variant="danger">{error}</Alert> : null}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
-          >
+          <Button className="w-full" type="submit" disabled={loading}>
             {loading ? 'Updating…' : 'Update password'}
-          </button>
+          </Button>
         </form>
       )}
-
-      <div className="mt-4 text-sm">
-        <Link className="font-medium text-blue-600" to="/login">
-          Back to login
-        </Link>
-        <span className="mx-2 text-slate-400">•</span>
-        <Link className="font-medium text-blue-600" to="/forgot-password">
-          Request reset link
-        </Link>
-      </div>
-    </div>
+    </AuthShell>
   )
 }
 

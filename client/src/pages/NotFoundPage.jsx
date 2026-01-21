@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom'
+import { Card } from '../components/ui/Card'
 
 export function NotFoundPage() {
   return (
-    <div className="rounded-lg border bg-white p-6">
-      <h1 className="text-lg font-semibold">Not found</h1>
-      <p className="mt-2 text-sm text-slate-600">The page you requested does not exist.</p>
-      <Link className="mt-4 inline-block text-sm font-medium text-blue-600" to="/">
+    <Card>
+      <h1 className="text-lg font-semibold text-[#352D36]">Not found</h1>
+      <p className="mt-2 text-sm text-[#7D7980]">The page you requested does not exist.</p>
+      <Link className="mt-4 inline-block text-sm font-medium text-[#352D36] underline-offset-4 hover:underline" to="/">
         Go home
       </Link>
-    </div>
+    </Card>
   )
 }
