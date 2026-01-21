@@ -1,0 +1,2 @@
+# lab_document_management
+Laboratory document management application
