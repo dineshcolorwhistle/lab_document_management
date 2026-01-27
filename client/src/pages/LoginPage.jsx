@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { login } from '../services/auth'
 import { setToken } from '../services/token'
+import { useAuth } from '../contexts/AuthContext'
 import { AuthShell } from '../components/AuthShell'
 import { Alert } from '../components/ui/Alert'
 import { Button } from '../components/ui/Button'
@@ -9,6 +10,7 @@ import { Input } from '../components/ui/Input'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { login: authLogin } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,6 +23,7 @@ export function LoginPage() {
     try {
       const data = await login({ email: email.trim(), password })
       setToken(data.token)
+      authLogin(data.user, data.token)
       navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err?.response?.data?.message || 'Login failed')

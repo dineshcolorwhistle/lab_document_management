@@ -114,8 +114,35 @@ Typical values you will need:
 
 ### Forgot password (reset link)
 - **Server**: set `APP_BASE_URL` to your frontend URL (used to generate reset links), e.g. `http://localhost:5173`
-- **Optional email (SMTP)**: if SMTP env vars are not set, the server will **log** the reset link instead of sending email.
+- **Optional email (SMTP)**: if SMTP env vars are not set, the server will use **Ethereal** (test inbox) in dev or log the reset link.
   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`
+
+#### Gmail SMTP Setup (App Password Required)
+If using Gmail, you **must** use an **App Password**, not your regular Gmail password. Gmail blocks regular passwords for SMTP.
+
+**Steps:**
+1. Enable **2-Step Verification** on your Google Account: https://myaccount.google.com/security
+2. Go to **App Passwords**: https://myaccount.google.com/apppasswords
+   - Select app: "Mail"
+   - Select device: "Other (Custom name)" → enter "Lab Document Management"
+   - Click **Generate**
+3. Copy the 16-character password (no spaces)
+4. In `server/.env`, set:
+   ```bash
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_SECURE=false
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASS=xxxx xxxx xxxx xxxx  # Use the App Password (16 chars, no spaces)
+   SMTP_FROM=your-email@gmail.com  # Usually same as SMTP_USER
+   ```
+
+**Note:** If you see `534-5.7.9 Application-specific password required`, you're using your regular Gmail password. Use an App Password instead.
+
+**Other SMTP providers:**
+- **Mailtrap** (testing): Use their SMTP credentials from your inbox settings
+- **SendGrid / Mailgun**: Use their provided SMTP credentials
+- **Custom SMTP**: Use your provider's SMTP settings
 
 ### `.env` gotcha (important)
 - **If a value contains `#`, wrap it in quotes**. In `.env` files, `#` starts a comment.

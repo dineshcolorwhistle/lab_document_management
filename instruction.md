@@ -31,8 +31,6 @@ You should keep this file updated and commit it to Git.
 - Nodemailer (email notifications)
 
 ### Infrastructure
-- AWS S3 – document storage
-- AWS IAM – S3 access
 - MongoDB Atlas or self-hosted MongoDB
 
 ---
@@ -111,7 +109,6 @@ Rules:
 - Validate all request payloads
 - Enforce role-based access control
 - Never hardcode secrets
-- Use AWS S3 for document storage
 - Maintain audit logs for all document actions
 - Follow naming conventions consistently
 - No business logic in routes
@@ -237,7 +234,6 @@ Include audit logging and validation.
 ## 14. Deployment Notes
 
 - Backend runs on Node server
-- S3 bucket private
 - Signed URLs for download
 
 ---

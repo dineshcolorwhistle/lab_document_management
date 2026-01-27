@@ -1,4 +1,4 @@
-export function cn(...parts) {
-  return parts.filter(Boolean).join(' ')
+export function cn(...classes) {
+  return classes.filter(Boolean).join(' ')
 }
 
