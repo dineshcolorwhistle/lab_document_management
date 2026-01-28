@@ -41,7 +41,8 @@ pipeline {
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no admin@srv648489 "
-                        cd /home/admin/htdocs/lab-document.eduwhistle.com/lab_document_management &&
+                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
+                        cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
                         git fetch origin &&
                         git reset --hard origin/main &&
                         pm2 reload lab-doc-api || pm2 start server/src/server.js --name lab-doc-api &&
@@ -51,8 +52,6 @@ pipeline {
                 }
             }
         }
-
-
     }
 
     post {
