@@ -69,7 +69,7 @@ export function LoginPage() {
 
         <div className="flex items-center justify-between text-sm">
           <Link className="font-medium text-[#352D36] underline-offset-4 hover:underline" to="/forgot-password">
-            Forgot password?
+            Forgot password click here?
           </Link>
           <span className="text-xs text-[#909493]">Secure access with RBAC</span>
         </div>
