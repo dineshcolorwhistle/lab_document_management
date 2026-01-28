@@ -38,17 +38,22 @@ pipeline {
 
         stage('Deploy to Server') {
             steps {
-                sh '''
-                  cd /home/admin/htdocs/lab-document.eduwhistle.com/lab_document_management
+                sshagent(credentials: ['prod-vps-ssh']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no admin@srv648489 << 'EOF'
+                        cd /home/admin/htdocs/lab-document.eduwhistle.com/lab_document_management
 
-                  git fetch origin
-                  git reset --hard origin/main
+                        git fetch origin
+                        git reset --hard origin/main
 
-                  pm2 restart lab-doc-api || pm2 start server/src/server.js --name lab-doc-api
-                  pm2 save
-                '''
+                        pm2 reload lab-doc-api || pm2 start server/src/server.js --name lab-doc-api
+                        pm2 save
+                    EOF
+                    '''
+                }
             }
         }
+
     }
 
     post {
