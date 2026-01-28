@@ -34,15 +34,14 @@ pipeline {
         }
 
         stage('Build Client') {
-            steps {
-                dir('client') {
-                    sh '''
-                    npm install
-                    npm run build
-                    '''
-                }
+            dir('client') {
+                sh '''
+                npm install --include=dev
+                npm run build
+                '''
             }
         }
+
 
 
         stage('Deploy to Server') {
