@@ -40,7 +40,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no admin@srv648489 << 'EOF'
+                        ssh -o StrictHostKeyChecking=no admin@srv648489 <<EOF
                         cd /home/admin/htdocs/lab-document.eduwhistle.com/lab_document_management
 
                         git fetch origin
@@ -48,8 +48,8 @@ pipeline {
 
                         pm2 reload lab-doc-api || pm2 start server/src/server.js --name lab-doc-api
                         pm2 save
-                    EOF
-                    '''
+                        EOF
+                        '''
                 }
             }
         }
