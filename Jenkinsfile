@@ -36,10 +36,14 @@ pipeline {
         stage('Build Client') {
             steps {
                 dir('client') {
-                    sh 'npm run build'
+                    sh '''
+                    npm install
+                    npm run build
+                    '''
                 }
             }
         }
+
 
         stage('Deploy to Server') {
             steps {
