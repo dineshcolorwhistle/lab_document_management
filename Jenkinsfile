@@ -41,26 +41,44 @@ pipeline {
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no admin@srv648489 "
-                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
-                        cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
+                        set -e
 
-                        git fetch origin &&
-                        git reset --hard origin/main &&
+                        APP_DIR=/home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
+                        API_PORT=7001
 
-                        npm --prefix client install &&
-                        npm --prefix client run build &&
-                        
-                        npm --prefix server install &&
-                        rm -rf client/public/* &&
-                        cp -r client/dist/* client/public/ &&
+                        echo '👉 Switching to app directory'
+                        cd $APP_DIR
 
-                        pm2 restart lab-doc-api --update-env || pm2 start server/src/server.js --name lab-doc-api &&
+                        echo '👉 Marking repo as safe'
+                        git config --global --add safe.directory $APP_DIR
+
+                        echo '👉 Fetching latest code'
+                        git fetch origin
+                        git reset --hard origin/main
+
+                        echo '👉 Building frontend'
+                        npm --prefix client install
+                        npm --prefix client run build
+
+                        echo '👉 Installing server dependencies'
+                        npm --prefix server install --production
+
+                        echo '👉 Updating public assets'
+                        rm -rf client/public/*
+                        cp -r client/dist/* client/public/
+
+                        echo '👉 Restarting API (clean PM2 start)'
+                        pm2 delete lab-doc-api || true
+                        PORT=$API_PORT pm2 start server/src/server.js --name lab-doc-api
                         pm2 save
+
+                        echo '✅ Deployment completed'
                     "
                     '''
                 }
             }
         }
+
 
 
     }
