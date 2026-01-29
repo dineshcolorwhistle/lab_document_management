@@ -41,27 +41,41 @@ pipeline {
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no admin@srv648489 "
-                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
-                        cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
+                        set -e
 
-                        git fetch origin &&
-                        git reset --hard origin/main &&
+                        # Ensure repo is trusted
+                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
-                        npm --prefix client install &&
-                        npm --prefix client run build &&
-                        
-                        npm --prefix server install &&
-                        rm -rf client/public/* &&
-                        cp -r client/dist/* client/public/ &&
+                        # Go to project directory
+                        cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
-                        pm2 delete lab-doc-api || true &&
-                        PORT=7001 pm2 start server/src/server.js --name lab-doc-api &&
+                        # Update code
+                        git fetch origin
+                        git reset --hard origin/main
+
+                        # Build client
+                        npm --prefix client install
+                        npm --prefix client run build
+
+                        # Install server deps
+                        npm --prefix server install
+
+                        # Move client build
+                        rm -rf client/public/*
+                        cp -r client/dist/* client/public/
+
+                        # PM2: restart if exists, otherwise start
+                        pm2 describe lab-doc-api >/dev/null 2>&1 && \
+                        pm2 restart lab-doc-api || \
+                        PORT=7001 pm2 start server/src/server.js --name lab-doc-api
+
                         pm2 save
                     "
                     '''
                 }
             }
         }
+
 
     }
 
