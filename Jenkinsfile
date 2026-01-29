@@ -41,21 +41,26 @@ pipeline {
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no admin@srv648489 "
-                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
-                        cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management &&
+                        set -e
 
-                        git fetch origin &&
-                        git reset --hard origin/main &&
+                        APP_DIR=/home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
-                        npm --prefix client install &&
-                        npm --prefix client run build &&
-                        
-                        npm --prefix server install &&
-                        rm -rf client/public/* &&
-                        cp -r client/dist/* client/public/ &&
+                        cd $APP_DIR
+                        git config --global --add safe.directory $APP_DIR
 
-                        pm2 delete lab-doc-api || true &&
-                        PORT=7001 pm2 start server/src/server.js --name lab-doc-api &&
+                        git fetch origin
+                        git reset --hard origin/main
+
+                        npm --prefix client install
+                        npm --prefix client run build
+
+                        npm --prefix server install --production
+
+                        rm -rf client/public/*
+                        cp -r client/dist/* client/public/
+
+                        pm2 delete lab-doc-api || true
+                        pm2 start ecosystem.config.js
                         pm2 save
                     "
                     '''

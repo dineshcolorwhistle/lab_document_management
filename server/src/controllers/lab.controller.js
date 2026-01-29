@@ -8,11 +8,21 @@ const { ROLES } = require('../constants/roles')
 const Lab = require('../models/Lab')
 const User = require('../models/User')
 
+const contactSchema = z
+  .string()
+  .trim()
+  .optional()
+  .default('')
+  .refine((val) => !val || /^\d{10}$/.test(val.replace(/\D/g, '').slice(0, 10)), {
+    message: 'Contact must be exactly 10 digits (numbers only)',
+  })
+  .transform((val) => (val ? val.replace(/\D/g, '').slice(0, 10) : ''))
+
 const createLabSchema = z.object({
   name: z.string().trim().min(1, 'Lab name is required'),
   description: z.string().trim().optional().default(''),
   address: z.string().trim().optional().default(''),
-  contact: z.string().trim().optional().default(''),
+  contact: contactSchema,
   labOwnerIds: z.array(z.string().min(1)).min(1, 'At least one lab owner is required'),
   labTechnicianIds: z.array(z.string().min(1)).min(1, 'At least one lab technician is required'),
 })
@@ -21,7 +31,7 @@ const updateLabSchema = z.object({
   name: z.string().trim().min(1, 'Lab name is required'),
   description: z.string().trim().optional().default(''),
   address: z.string().trim().optional().default(''),
-  contact: z.string().trim().optional().default(''),
+  contact: contactSchema,
   labOwnerIds: z.array(z.string().min(1)).min(1, 'At least one lab owner is required'),
   labTechnicianIds: z.array(z.string().min(1)).min(1, 'At least one lab technician is required'),
 })

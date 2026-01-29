@@ -28,7 +28,7 @@ function loadEnv() {
   const JWT_EXPIRES_IN = getEnv('JWT_EXPIRES_IN', { required: false, defaultValue: '24h' })
   const CORS_ORIGIN = getEnv('CORS_ORIGIN', { required: false, defaultValue: 'http://localhost:5173' })
 
-  // Used to build reset-password links
+  // Base URL for emails (reset-password, lab assignment, etc.). On production server set this to your public URL (e.g. https://lab-document.eduwhistle.com) so emails do not contain localhost.
   const APP_BASE_URL = getEnv('APP_BASE_URL', { required: false, defaultValue: 'http://localhost:5173' })
 
   // SMTP (optional in dev)

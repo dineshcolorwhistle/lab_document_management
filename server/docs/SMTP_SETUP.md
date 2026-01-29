@@ -73,6 +73,18 @@ SMTP_PASS=<your-mailgun-smtp-password>
 SMTP_FROM=noreply@your-domain.com
 ```
 
+## Base URL for emails (production)
+
+Emails (password reset, lab assignment, etc.) include a link to your app. By default the server uses `http://localhost:5173`. **On your production server (VPS) you must set `APP_BASE_URL`** in the server `.env` to your public URL so emails contain the correct link:
+
+```bash
+APP_BASE_URL=https://lab-document.eduwhistle.com
+```
+
+(Use your actual domain. No trailing slash.)
+
+If this is not set on the server, users will receive emails with a localhost link that does not work from their machine.
+
 ## Environment Variables
 
 All SMTP variables are **optional**. If not set, the app uses Ethereal in development.
@@ -85,6 +97,7 @@ All SMTP variables are **optional**. If not set, the app uses Ethereal in develo
 | `SMTP_USER` | SMTP username (usually your email) | `user@gmail.com` |
 | `SMTP_PASS` | SMTP password (for Gmail: App Password) | `abcdefghijklmnop` |
 | `SMTP_FROM` | "From" email address | `noreply@lab-docs.com` |
+| `APP_BASE_URL` | Public app URL for email links (set on production server) | `https://lab-document.eduwhistle.com` |
 
 ## Troubleshooting
 

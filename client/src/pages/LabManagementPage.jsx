@@ -126,6 +126,8 @@ export function LabManagementPage() {
 
   const validateForm = (f) => {
     if (!f.name?.trim()) return 'Lab name is required'
+    const contactVal = (f.contact || '').trim().replace(/\D/g, '')
+    if (contactVal && contactVal.length !== 10) return 'Contact must be exactly 10 digits'
     if (!f.labOwnerIds?.length) return 'Select at least one lab owner'
     if (!f.labTechnicianIds?.length) return 'Select at least one lab technician'
     return null
@@ -145,7 +147,7 @@ export function LabManagementPage() {
         name: form.name.trim(),
         description: form.description.trim(),
         address: form.address.trim(),
-        contact: form.contact.trim(),
+        contact: (form.contact || '').trim().replace(/\D/g, '').slice(0, 10) || '',
         labOwnerIds: form.labOwnerIds,
         labTechnicianIds: form.labTechnicianIds,
       })
@@ -162,11 +164,12 @@ export function LabManagementPage() {
 
   const openEditModal = (lab) => {
     setEditingLab(lab)
+    const contactDigits = (lab.contact || '').replace(/\D/g, '').slice(0, 10)
     setEditForm({
       name: lab.name,
       description: lab.description || '',
       address: lab.address || '',
-      contact: lab.contact || '',
+      contact: contactDigits,
       labOwnerIds: (lab.labOwners || []).map((o) => o.id),
       labTechnicianIds: (lab.labTechnicians || []).map((t) => t.id),
     })
@@ -180,10 +183,19 @@ export function LabManagementPage() {
     setEditError(null)
   }
 
+  const validateEditForm = (f) => {
+    if (!f.name?.trim()) return 'Lab name is required'
+    const contactVal = (f.contact || '').trim().replace(/\D/g, '')
+    if (contactVal && contactVal.length !== 10) return 'Contact must be exactly 10 digits'
+    if (!f.labOwnerIds?.length) return 'Select at least one lab owner'
+    if (!f.labTechnicianIds?.length) return 'Select at least one lab technician'
+    return null
+  }
+
   const handleEditSubmit = async (e) => {
     e.preventDefault()
     if (!editingLab) return
-    const err = validateForm(editForm)
+    const err = validateEditForm(editForm)
     if (err) {
       setEditError(err)
       return
@@ -195,7 +207,7 @@ export function LabManagementPage() {
         name: editForm.name.trim(),
         description: editForm.description.trim(),
         address: editForm.address.trim(),
-        contact: editForm.contact.trim(),
+        contact: (editForm.contact || '').trim().replace(/\D/g, '').slice(0, 10) || '',
         labOwnerIds: editForm.labOwnerIds,
         labTechnicianIds: editForm.labTechnicianIds,
       })
@@ -419,12 +431,19 @@ export function LabManagementPage() {
               </label>
               <Input
                 id="lab-contact"
-                type="text"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={10}
                 className="mt-1"
                 value={form.contact}
-                onChange={(e) => setForm((f) => ({ ...f, contact: e.target.value }))}
-                placeholder="Phone or email"
+                onChange={(e) => {
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 10)
+                  setForm((f) => ({ ...f, contact: digits }))
+                }}
+                placeholder="10-digit phone number"
               />
+              <p className="mt-1 text-xs text-brand-muted">Numbers only, exactly 10 digits</p>
             </div>
             <MultiSelect
               label="Lab owners"
@@ -508,12 +527,19 @@ export function LabManagementPage() {
             </label>
             <Input
               id="edit-lab-contact"
-              type="text"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={10}
               className="mt-1"
               value={editForm.contact}
-              onChange={(e) => setEditForm((f) => ({ ...f, contact: e.target.value }))}
-              placeholder="Phone or email"
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 10)
+                setEditForm((f) => ({ ...f, contact: digits }))
+              }}
+              placeholder="10-digit phone number"
             />
+            <p className="mt-1 text-xs text-brand-muted">Numbers only, exactly 10 digits</p>
           </div>
           <MultiSelect
             label="Lab owners"

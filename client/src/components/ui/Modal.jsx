@@ -22,37 +22,40 @@ export function Modal({ open, onClose, title, children, className }) {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 min-h-full"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
         className={cn(
-          'relative w-full max-w-md rounded-xl border border-gray-200 bg-white shadow-xl',
+          'relative w-full max-h-[90vh] flex flex-col rounded-xl border border-gray-200 bg-white shadow-xl my-auto',
+          'max-w-md sm:max-w-lg',
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-          <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
+          <h2 id="modal-title" className="text-base font-semibold text-gray-900 sm:text-lg truncate pr-2">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 shrink-0"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-4 min-h-0">
+          {children}
+        </div>
       </div>
     </div>,
     document.body
