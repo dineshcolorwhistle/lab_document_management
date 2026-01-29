@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import { useAuth } from '../../contexts/AuthContext'
+import { cn } from '../../utils/cn'
 
 const pageTitles = {
   '/dashboard': 'Dashboard',
@@ -19,6 +20,7 @@ const pageTitles = {
 
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const location = useLocation()
   const { loading } = useAuth()
 
@@ -27,17 +29,27 @@ export function DashboardLayout() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-sm text-gray-600">Loading...</div>
+      <div className="flex min-h-screen items-center justify-center bg-brand-surface">
+        <div className="text-sm text-brand-muted">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      <Sidebar isMobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} />
+    <div className="flex h-screen overflow-hidden bg-brand-surface">
+      <Sidebar
+        isMobileOpen={sidebarOpen}
+        onMobileClose={() => setSidebarOpen(false)}
+        isCollapsed={sidebarCollapsed}
+        onCollapseToggle={() => setSidebarCollapsed((c) => !c)}
+      />
 
-      <div className="flex flex-1 flex-col overflow-hidden lg:pl-64">
+      <div
+        className={cn(
+          'flex flex-1 flex-col overflow-hidden transition-[margin] duration-300',
+          sidebarCollapsed ? 'lg:pl-sidebar-collapsed' : 'lg:pl-sidebar'
+        )}
+      >
         <Header
           title={title}
           breadcrumbs={[]}
@@ -50,6 +62,7 @@ export function DashboardLayout() {
           </div>
         </main>
       </div>
+
     </div>
   )
 }

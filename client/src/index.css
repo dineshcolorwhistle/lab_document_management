@@ -2,29 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens (optional ref; Tailwind theme holds canonical values) */
+:root {
+  --ldm-primary: #352D36;
+  --ldm-primary-hover: #3f3441;
+  --ldm-surface: #F7F6F2;
+  --ldm-muted: #9C9F9F;
+  --ldm-muted-light: #909493;
+  --ldm-text: #352D36;
+  --ldm-shadow-soft: 0 2px 8px rgba(53, 45, 54, 0.06);
+  --ldm-shadow-soft-lg: 0 4px 20px rgba(53, 45, 54, 0.08);
+}
+
 @layer components {
+  /* Cards: minimal border, soft shadow, rounded */
   .ldm-card {
-    @apply rounded-2xl border border-[#9C9F9F]/45 bg-white/70 p-6 shadow-[0_20px_70px_-40px_rgba(53,45,54,0.35)] backdrop-blur;
+    @apply rounded-2xl border border-brand-border bg-brand-surface-elevated p-6 shadow-soft-lg;
   }
 
   .ldm-input {
-    @apply w-full rounded-xl border border-[#9C9F9F]/55 bg-white/70 px-3 py-2 text-sm text-[#352D36] placeholder:text-[#909493] shadow-sm outline-none transition focus:border-[#352D36]/60 focus:ring-2 focus:ring-[#7D7980]/25;
+    @apply w-full rounded-xl border border-brand-muted/40 bg-brand-surface-elevated px-3 py-2.5 text-sm text-brand-primary placeholder:text-brand-muted-light outline-none transition focus:border-brand-primary/50 focus:ring-2 focus:ring-brand-muted/20;
   }
 
   .ldm-btn {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium shadow-soft transition hover:shadow-soft-lg disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .ldm-btn-primary {
-    @apply bg-[#352D36] text-[#F7F6F2] hover:bg-[#3f3441];
+    @apply bg-brand-primary text-brand-surface hover:bg-brand-primary-hover;
   }
 
   .ldm-btn-secondary {
-    @apply border border-[#9C9F9F]/55 bg-white/70 text-[#352D36] hover:bg-white;
+    @apply border border-brand-border bg-brand-surface-elevated text-brand-primary hover:bg-brand-surface;
   }
 
   .ldm-btn-ghost {
-    @apply bg-transparent text-[#352D36] hover:bg-white/60;
+    @apply bg-transparent text-brand-primary hover:bg-brand-muted/10;
   }
 
   .ldm-alert {
@@ -32,11 +45,11 @@
   }
 
   .ldm-alert-info {
-    @apply border-[#9C9F9F]/45 bg-[#F7F6F2] text-[#352D36];
+    @apply border-brand-border bg-brand-surface text-brand-primary;
   }
 
   .ldm-alert-success {
-    @apply border-[#909493]/40 bg-white/60 text-[#352D36];
+    @apply border-brand-muted/40 bg-brand-surface-elevated/80 text-brand-primary;
   }
 
   .ldm-alert-warning {
@@ -48,7 +61,6 @@
   }
 }
 
-/* App-wide base styles (keep minimal; prefer Tailwind utilities). */
 html,
 body,
 #root {
@@ -56,5 +68,5 @@ body,
 }
 
 body {
-  @apply bg-[#F7F6F2] text-[#352D36];
+  @apply bg-brand-surface text-brand-primary antialiased;
 }

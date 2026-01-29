@@ -34,6 +34,10 @@ async function getEtherealTransport() {
 async function getTransport() {
   const smtp = getSmtpTransport()
   if (smtp) return { transport: smtp, ethereal: false }
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[email] SMTP not configured (SMTP_HOST, SMTP_USER, SMTP_PASS). Using Ethereal test inbox – emails will NOT reach real addresses. See server/docs/SMTP_SETUP.md to send to real inboxes.'
+  )
   return { transport: await getEtherealTransport(), ethereal: true }
 }
 

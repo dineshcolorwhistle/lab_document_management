@@ -60,9 +60,10 @@ export const menuItems = [
     label: 'Lab Management',
     path: '/lab-management',
     icon: FlaskConical,
-    roles: [ROLES.ADMIN],
+    roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
     rolePermissions: {
       [ROLES.ADMIN]: PERMISSIONS.CRUD,
+      [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
     },
   },
   {
@@ -70,10 +71,11 @@ export const menuItems = [
     label: 'Lab Technician',
     path: '/lab-technicians',
     icon: Wrench,
-    roles: [ROLES.ADMIN, ROLES.LAB_OWNER],
+    roles: [ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.SUPER_ADMIN],
     rolePermissions: {
       [ROLES.ADMIN]: PERMISSIONS.CRUD,
       [ROLES.LAB_OWNER]: PERMISSIONS.VIEW,
+      [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
     },
   },
   {
@@ -81,9 +83,10 @@ export const menuItems = [
     label: 'Lab Owner',
     path: '/lab-owners',
     icon: Building2,
-    roles: [ROLES.ADMIN],
+    roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
     rolePermissions: {
       [ROLES.ADMIN]: PERMISSIONS.CRUD,
+      [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
     },
   },
   {

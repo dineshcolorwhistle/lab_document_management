@@ -3,6 +3,8 @@ import { LoginPage } from '../pages/LoginPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
 import { DashboardPage } from '../pages/DashboardPage'
 import { AdminPage } from '../pages/AdminPage'
+import { LabOwnersPage } from '../pages/LabOwnersPage'
+import { LabTechniciansPage } from '../pages/LabTechniciansPage'
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -73,34 +75,32 @@ export function AppRoutes() {
           }
         />
 
-        {/* Lab Management — ADMIN only (CRUD) */}
+        {/* Lab Management — ADMIN, SUPER_ADMIN (CRUD) */}
         <Route
           path="/lab-management"
           element={
-            <RequireRole allowedRoles={[ROLES.ADMIN]}>
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
               <Placeholder title="Lab Management" />
             </RequireRole>
           }
         />
 
-        {/* Lab Technician — ADMIN (CRUD), LAB_OWNER (View) */}
+        {/* Lab Technician — ADMIN and SUPER_ADMIN (CRUD), LAB_OWNER (View) */}
         <Route
           path="/lab-technicians"
           element={
-            <RequireRole
-              allowedRoles={[ROLES.ADMIN, ROLES.LAB_OWNER]}
-            >
-              <Placeholder title="Lab Technician" />
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.SUPER_ADMIN]}>
+              <LabTechniciansPage />
             </RequireRole>
           }
         />
 
-        {/* Lab Owner — ADMIN only (CRUD) */}
+        {/* Lab Owner — ADMIN and SUPER_ADMIN (CRUD) */}
         <Route
           path="/lab-owners"
           element={
-            <RequireRole allowedRoles={[ROLES.ADMIN]}>
-              <Placeholder title="Lab Owner" />
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
+              <LabOwnersPage />
             </RequireRole>
           }
         />

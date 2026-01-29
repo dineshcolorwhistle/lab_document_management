@@ -9,29 +9,29 @@ import {
   Clock,
 } from 'lucide-react'
 
-const StatCard = ({ title, value, icon: Icon, trend, trendLabel, color = 'blue' }) => {
+const StatCard = ({ title, value, icon: Icon, trend, trendLabel, color = 'brand' }) => {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-200',
-    green: 'bg-green-50 text-green-600 border-green-200',
-    yellow: 'bg-yellow-50 text-yellow-600 border-yellow-200',
-    red: 'bg-red-50 text-red-600 border-red-200',
-    purple: 'bg-purple-50 text-purple-600 border-purple-200',
+    brand: 'bg-brand-primary/8 text-brand-primary border-brand-muted/30',
+    green: 'bg-accent-green/10 text-accent-green border-accent-green/20',
+    amber: 'bg-accent-amber/10 text-accent-amber border-accent-amber/20',
+    red: 'bg-accent-red/10 text-accent-red border-accent-red/20',
+    blue: 'bg-accent-blue/10 text-accent-blue border-accent-blue/20',
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+    <div className="ldm-card rounded-2xl transition-shadow hover:shadow-soft-xl">
       <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-brand-muted">{title}</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-brand-primary sm:text-3xl">{value}</p>
           {trend && (
-            <div className="mt-2 flex items-center gap-1 text-sm">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <span className="text-gray-600">{trendLabel || trend}</span>
+            <div className="mt-2 flex items-center gap-1.5 text-sm text-brand-muted">
+              <TrendingUp className="h-4 w-4 text-accent-green" />
+              <span>{trendLabel || trend}</span>
             </div>
           )}
         </div>
-        <div className={`flex h-12 w-12 items-center justify-center rounded-lg border ${colorClasses[color]}`}>
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${colorClasses[color]}`}>
           <Icon className="h-6 w-6" />
         </div>
       </div>
@@ -50,13 +50,8 @@ export function DashboardPage() {
   })
 
   useEffect(() => {
-    // Simulate API call - replace with actual API endpoint
     const fetchStats = async () => {
       try {
-        // TODO: Replace with actual API call
-        // const data = await api.get('/dashboard/stats')
-        
-        // Mock data for now
         setTimeout(() => {
           setStats({
             totalLabs: 12,
@@ -78,7 +73,7 @@ export function DashboardPage() {
   if (stats.loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-sm text-gray-600">Loading dashboard...</div>
+        <div className="text-sm text-brand-muted">Loading dashboard...</div>
       </div>
     )
   }
@@ -86,29 +81,29 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="rounded-xl border border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-900">
+      <div className="rounded-2xl border border-brand-border bg-brand-surface-elevated p-6 shadow-soft-lg">
+        <h2 className="text-xl font-semibold text-brand-primary">
           Welcome back, {user?.name}!
         </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Here's an overview of your compliance dashboard.
+        <p className="mt-1 text-sm text-brand-muted">
+          Here&apos;s an overview of your compliance dashboard.
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
         <StatCard
           title="Total Labs"
           value={stats.totalLabs}
           icon={FlaskConical}
-          color="blue"
+          color="brand"
           trend="+2 this month"
         />
         <StatCard
           title="Pending Documents"
           value={stats.pendingDocuments}
           icon={Clock}
-          color="yellow"
+          color="amber"
           trendLabel="Requires attention"
         />
         <StatCard
@@ -128,26 +123,26 @@ export function DashboardPage() {
       </div>
 
       {/* Quick Actions / Recent Activity Section */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
         {/* Recent Documents */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="ldm-card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Documents</h3>
-            <a href="/documents" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+            <h3 className="text-lg font-semibold text-brand-primary">Recent Documents</h3>
+            <a href="/documents" className="text-sm font-medium text-brand-primary hover:text-brand-primary-hover">
               View all
             </a>
           </div>
           <div className="space-y-3">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="flex items-center gap-3 rounded-lg border border-gray-100 p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                  <FileText className="h-5 w-5 text-blue-600" />
+              <div key={item} className="flex items-center gap-3 rounded-xl border border-brand-border/60 bg-brand-surface/50 p-3 transition-colors hover:bg-brand-muted/5">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/8">
+                  <FileText className="h-5 w-5 text-brand-primary" />
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">Document {item}</p>
-                  <p className="text-xs text-gray-500">Updated 2 hours ago</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-brand-primary">Document {item}</p>
+                  <p className="text-xs text-brand-muted">Updated 2 hours ago</p>
                 </div>
-                <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                <span className="shrink-0 rounded-lg bg-accent-green/10 px-2.5 py-1 text-xs font-medium text-accent-green">
                   Approved
                 </span>
               </div>
@@ -156,16 +151,16 @@ export function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Quick Actions</h3>
+        <div className="ldm-card">
+          <h3 className="mb-4 text-lg font-semibold text-brand-primary">Quick Actions</h3>
           <div className="space-y-2">
-            <button className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+            <button className="ldm-btn ldm-btn-secondary w-full justify-start rounded-xl text-left">
               Upload New Document
             </button>
-            <button className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+            <button className="ldm-btn ldm-btn-secondary w-full justify-start rounded-xl text-left">
               Review Pending Documents
             </button>
-            <button className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50">
+            <button className="ldm-btn ldm-btn-secondary w-full justify-start rounded-xl text-left">
               Generate Compliance Report
             </button>
           </div>
