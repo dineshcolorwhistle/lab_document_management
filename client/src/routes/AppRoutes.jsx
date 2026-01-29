@@ -5,6 +5,7 @@ import { DashboardPage } from '../pages/DashboardPage'
 import { AdminPage } from '../pages/AdminPage'
 import { LabOwnersPage } from '../pages/LabOwnersPage'
 import { LabTechniciansPage } from '../pages/LabTechniciansPage'
+import { LabManagementPage } from '../pages/LabManagementPage'
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -75,12 +76,12 @@ export function AppRoutes() {
           }
         />
 
-        {/* Lab Management — ADMIN, SUPER_ADMIN (CRUD) */}
+        {/* Lab Management — SUPER_ADMIN, ADMIN only (CRUD) */}
         <Route
           path="/lab-management"
           element={
-            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
-              <Placeholder title="Lab Management" />
+            <RequireRole allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ADMIN]}>
+              <LabManagementPage />
             </RequireRole>
           }
         />
