@@ -25,43 +25,45 @@ const { ROLES } = require('../constants/roles')
 
 const router = express.Router()
 
+// Mounted at /api/users — paths here are relative to /users (full path: /api/users/...)
+
 router.get(
-  '/users',
+  '/',
   requireAuth,
   authorizeRoles(ROLES.SUPER_ADMIN),
   listAdmins,
 )
 
 router.post(
-  '/users/admins',
+  '/admins',
   requireAuth,
   authorizeRoles(ROLES.SUPER_ADMIN),
   createAdmin,
 )
 
 router.patch(
-  '/users/admins/:id',
+  '/admins/:id',
   requireAuth,
   authorizeRoles(ROLES.SUPER_ADMIN),
   updateAdmin,
 )
 
 router.patch(
-  '/users/admins/:id/enable',
+  '/admins/:id/enable',
   requireAuth,
   authorizeRoles(ROLES.SUPER_ADMIN),
   enableAdmin,
 )
 
 router.delete(
-  '/users/admins/:id/permanent',
+  '/admins/:id/permanent',
   requireAuth,
   authorizeRoles(ROLES.SUPER_ADMIN),
   deleteAdminPermanent,
 )
 
 router.delete(
-  '/users/admins/:id',
+  '/admins/:id',
   requireAuth,
   authorizeRoles(ROLES.SUPER_ADMIN),
   deleteAdmin,
@@ -69,42 +71,42 @@ router.delete(
 
 // Lab owners — ADMIN and SUPER_ADMIN (CRUD)
 router.get(
-  '/users/lab-owners',
+  '/lab-owners',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   listLabOwners,
 )
 
 router.post(
-  '/users/lab-owners',
+  '/lab-owners',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   createLabOwner,
 )
 
 router.patch(
-  '/users/lab-owners/:id',
+  '/lab-owners/:id',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   updateLabOwner,
 )
 
 router.patch(
-  '/users/lab-owners/:id/enable',
+  '/lab-owners/:id/enable',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   enableLabOwner,
 )
 
 router.delete(
-  '/users/lab-owners/:id',
+  '/lab-owners/:id',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   deleteLabOwner,
 )
 
 router.delete(
-  '/users/lab-owners/:id/permanent',
+  '/lab-owners/:id/permanent',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   deleteLabOwnerPermanent,
@@ -112,42 +114,42 @@ router.delete(
 
 // Lab technicians — list: ADMIN, LAB_OWNER, SUPER_ADMIN; create/update/delete: ADMIN, SUPER_ADMIN
 router.get(
-  '/users/lab-technicians',
+  '/lab-technicians',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.SUPER_ADMIN),
   listLabTechnicians,
 )
 
 router.post(
-  '/users/lab-technicians',
+  '/lab-technicians',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   createLabTechnician,
 )
 
 router.patch(
-  '/users/lab-technicians/:id',
+  '/lab-technicians/:id',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   updateLabTechnician,
 )
 
 router.patch(
-  '/users/lab-technicians/:id/enable',
+  '/lab-technicians/:id/enable',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   enableLabTechnician,
 )
 
 router.delete(
-  '/users/lab-technicians/:id',
+  '/lab-technicians/:id',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   deleteLabTechnician,
 )
 
 router.delete(
-  '/users/lab-technicians/:id/permanent',
+  '/lab-technicians/:id/permanent',
   requireAuth,
   authorizeRoles(ROLES.ADMIN, ROLES.SUPER_ADMIN),
   deleteLabTechnicianPermanent,

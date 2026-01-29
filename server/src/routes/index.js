@@ -7,6 +7,6 @@ const router = express.Router()
 
 router.use('/', healthRouter)
 router.use('/auth', authRouter)
-router.use('/', usersRouter)
+router.use('/users', usersRouter)
 
 module.exports = router
