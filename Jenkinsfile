@@ -49,11 +49,12 @@ pipeline {
 
                         npm --prefix client install &&
                         npm --prefix client run build &&
-
+                        
+                        npm --prefix server install &&
                         rm -rf client/public/* &&
                         cp -r client/dist/* client/public/ &&
 
-                        pm2 reload lab-doc-api || pm2 start server/src/server.js --name lab-doc-api &&
+                        pm2 restart lab-doc-api --update-env || pm2 start server/src/server.js --name lab-doc-api &&
                         pm2 save
                     "
                     '''
