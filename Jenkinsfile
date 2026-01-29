@@ -40,29 +40,43 @@ pipeline {
             steps {
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no admin@srv648489 "
-                        set -e
+                    ssh -tt -o StrictHostKeyChecking=no admin@srv648489 << 'EOF'
+                    set -euo pipefail
 
-                        APP_DIR=/home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
+                    APP_DIR=/home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
-                        cd $APP_DIR
-                        git config --global --add safe.directory $APP_DIR
+                    echo "👉 Switching to app directory"
+                    cd "$APP_DIR"
 
-                        git fetch origin
-                        git reset --hard origin/main
+                    echo "👉 Verifying git repo"
+                    git status
 
-                        npm --prefix client install
-                        npm --prefix client run build
+                    echo "👉 Fetching latest code"
+                    git fetch origin
+                    git checkout main
+                    git reset --hard origin/main
 
-                        npm --prefix server install --production
+                    echo "👉 Verifying ecosystem file exists"
+                    test -f ecosystem.config.js
 
-                        rm -rf client/public/*
-                        cp -r client/dist/* client/public/
+                    echo "👉 Installing backend deps"
+                    npm --prefix server install --production
 
-                        pm2 delete lab-doc-api || true
-                        pm2 start ecosystem.config.js
-                        pm2 save
-                    "
+                    echo "👉 Building frontend"
+                    npm --prefix client install
+                    npm --prefix client run build
+
+                    echo "👉 Publishing frontend assets"
+                    rm -rf client/public/*
+                    cp -r client/dist/* client/public/
+
+                    echo "👉 Restarting API via PM2 ecosystem"
+                    pm2 delete lab-doc-api || true
+                    pm2 start ecosystem.config.js
+                    pm2 save
+
+                    echo "✅ Deployment finished successfully"
+                    EOF
                     '''
                 }
             }
