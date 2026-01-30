@@ -66,8 +66,8 @@ pipeline {
 
                         # PM2: restart if exists, otherwise start
                         pm2 describe lab-doc-api >/dev/null 2>&1 && \
-                        pm2 restart lab-doc-api || \
-                        PORT=7001 pm2 start server/src/server.js --name lab-doc-api
+                        pm2 reload ecosystem.config.js --only lab-doc-api --update-env || \
+                        pm2 start ecosystem.config.js --only lab-doc-api
 
                         pm2 save
                     "
