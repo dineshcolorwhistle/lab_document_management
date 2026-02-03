@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { listLabs, createLab, updateLab, deleteLab } from '../services/labs'
+import { Card } from '../components/ui/Card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table'
 import { listLabOwners } from '../services/users'
 import { listLabTechnicians } from '../services/users'
 import { Button } from '../components/ui/Button'
@@ -250,7 +252,10 @@ export function LabManagementPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold text-brand-primary">Lab Management</h2>
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Lab Management</h2>
+          <p className="text-muted-foreground text-sm mt-1">Manage labs, owners and technicians.</p>
+        </div>
         <Button type="button" onClick={openModal} className="inline-flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add Lab
@@ -259,7 +264,7 @@ export function LabManagementPage() {
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <div className="ldm-card overflow-hidden rounded-2xl p-0">
+      <Card className="p-0 overflow-hidden border-border/60 shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <p className="text-sm text-brand-muted">Loading labs…</p>
@@ -273,112 +278,104 @@ export function LabManagementPage() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-brand-border">
-                <thead className="bg-brand-surface/60">
-                  <tr>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-muted sm:px-6">
-                      Lab name
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-muted sm:px-6">
-                      Description
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-muted sm:px-6">
-                      Address
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-muted sm:px-6">
-                      Contact
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-muted sm:px-6">
-                      Lab owners
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-brand-muted sm:px-6">
-                      Lab technicians
-                    </th>
-                    <th scope="col" className="relative px-4 py-3 sm:px-6">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand-border bg-brand-surface-elevated">
+            <div className="relative w-full overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent bg-muted/20">
+                    <TableHead className="w-[200px]">Lab Name</TableHead>
+                    <TableHead className="w-[250px]">Description</TableHead>
+                    <TableHead className="w-[200px]">Address</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Owners</TableHead>
+                    <TableHead>Technicians</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {labs.map((lab) => (
-                    <tr key={lab.id} className="hover:bg-brand-muted/5">
-                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-brand-primary sm:px-6">
+                    <TableRow key={lab.id}>
+                      <TableCell className="font-medium text-foreground">
                         {lab.name}
-                      </td>
-                      <td className="max-w-[200px] truncate px-4 py-3 text-sm text-brand-muted sm:px-6" title={lab.description}>
+                      </TableCell>
+                      <TableCell className="max-w-[200px] truncate text-muted-foreground" title={lab.description}>
                         {lab.description || '—'}
-                      </td>
-                      <td className="max-w-[150px] truncate px-4 py-3 text-sm text-brand-muted sm:px-6" title={lab.address}>
+                      </TableCell>
+                      <TableCell className="max-w-[150px] truncate text-muted-foreground" title={lab.address}>
                         {lab.address || '—'}
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-brand-muted sm:px-6">
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap text-muted-foreground">
                         {lab.contact || '—'}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-brand-muted sm:px-6">
-                        {(lab.labOwners || []).length} owner(s)
-                      </td>
-                      <td className="px-4 py-3 text-sm text-brand-muted sm:px-6">
-                        {(lab.labTechnicians || []).length} technician(s)
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm sm:px-6">
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium ring-1 ring-inset ring-blue-700/10 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/20">
+                          {(lab.labOwners || []).length} owner(s)
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        <span className="inline-flex items-center px-2 py-1 rounded-md bg-slate-50 text-slate-700 text-xs font-medium ring-1 ring-inset ring-slate-600/10 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20">
+                          {(lab.labTechnicians || []).length} technician(s)
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openEditModal(lab)}
-                            className="rounded-lg p-2 text-brand-muted transition-colors hover:bg-brand-muted/10 hover:text-brand-primary"
                             title="Edit"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
                           >
                             <Pencil className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openDeleteModal(lab)}
-                            className="rounded-lg p-2 text-brand-muted transition-colors hover:bg-accent-red/10 hover:text-accent-red"
                             title="Delete"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-brand-border bg-brand-surface/60 px-4 py-3 sm:px-6">
-                <p className="text-sm text-brand-muted">
+              <div className="flex items-center justify-between border-t p-4 bg-muted/20">
+                <p className="text-sm text-muted-foreground">
                   Page {pagination.page} of {pagination.totalPages} · {pagination.total} total
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
-                    type="button"
-                    variant="secondary"
+                    variant="outline"
+                    size="sm"
                     disabled={pagination.page <= 1}
                     onClick={() => handlePageChange(pagination.page - 1)}
-                    className="inline-flex items-center gap-1"
+                    className="h-8 gap-1"
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="h-3.5 w-3.5" />
                     Previous
                   </Button>
                   <Button
-                    type="button"
-                    variant="secondary"
+                    variant="outline"
+                    size="sm"
                     disabled={pagination.page >= pagination.totalPages}
                     onClick={() => handlePageChange(pagination.page + 1)}
-                    className="inline-flex items-center gap-1"
+                    className="h-8 gap-1"
                   >
                     Next
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>
             )}
           </>
         )}
-      </div>
+      </Card>
 
       <Modal open={modalOpen} onClose={closeModal} title="Add Lab" className="max-w-lg">
         {successMessage ? (

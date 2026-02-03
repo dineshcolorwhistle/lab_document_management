@@ -138,4 +138,54 @@ const me = asyncHandler(async (req, res) => {
   })
 })
 
-module.exports = { login, me, forgotPassword, resetPassword }
+const updateProfileSchema = z.object({
+  name: z.string().trim().min(1),
+})
+
+const updatePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+})
+
+const updateProfile = asyncHandler(async (req, res) => {
+  const { name } = updateProfileSchema.parse(req.body)
+
+  const user = await User.findById(req.user.id)
+  if (!user) {
+    throw new AppError('User not found', { statusCode: 404 })
+  }
+
+  user.name = name
+  await user.save()
+
+  res.json({
+    success: true,
+    user: {
+      id: String(user._id),
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+  })
+})
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = updatePasswordSchema.parse(req.body)
+
+  const user = await User.findById(req.user.id).select('+passwordHash')
+  if (!user) {
+    throw new AppError('User not found', { statusCode: 404 })
+  }
+
+  const ok = await bcrypt.compare(currentPassword, user.passwordHash)
+  if (!ok) {
+    throw new AppError('Incorrect current password', { statusCode: 400, code: 'AUTH_INVALID_PASSWORD' })
+  }
+
+  user.passwordHash = await bcrypt.hash(newPassword, 10)
+  await user.save()
+
+  res.json({ success: true, message: 'Password updated successfully' })
+})
+
+module.exports = { login, me, forgotPassword, resetPassword, updateProfile, updatePassword }

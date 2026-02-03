@@ -8,6 +8,7 @@ import { LabTechniciansPage } from '../pages/LabTechniciansPage'
 import { LabManagementPage } from '../pages/LabManagementPage'
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
+import { ProfilePage } from '../pages/ProfilePage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
 import { RequireRole } from '../components/rbac/RequireRole'
@@ -128,7 +129,7 @@ export function AppRoutes() {
                 ROLES.LAB_TECHNICIAN,
               ]}
             >
-              <Placeholder title="Profile" desc="Profile settings." />
+              <ProfilePage />
             </RequireRole>
           }
         />
@@ -143,7 +144,7 @@ export function AppRoutes() {
                 ROLES.LAB_TECHNICIAN,
               ]}
             >
-              <Placeholder title="Account Settings" desc="Account settings." />
+              <ProfilePage />
             </RequireRole>
           }
         />

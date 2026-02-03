@@ -2,71 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens (optional ref; Tailwind theme holds canonical values) */
-:root {
-  --ldm-primary: #352D36;
-  --ldm-primary-hover: #3f3441;
-  --ldm-surface: #F7F6F2;
-  --ldm-muted: #9C9F9F;
-  --ldm-muted-light: #909493;
-  --ldm-text: #352D36;
-  --ldm-shadow-soft: 0 2px 8px rgba(53, 45, 54, 0.06);
-  --ldm-shadow-soft-lg: 0 4px 20px rgba(53, 45, 54, 0.08);
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    /* Slightly gray background for depth */
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    /* Deep Navy Slate */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 47.4% 11.2%;
+    /* Ring matches primary */
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
 }
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+}
+
+/* Legacy Support Layer - Mapping old classes to new system for smoother transition */
 @layer components {
-  /* Cards: minimal border, soft shadow, rounded */
   .ldm-card {
-    @apply rounded-2xl border border-brand-border bg-brand-surface-elevated p-6 shadow-soft-lg;
+    @apply rounded-xl border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-200;
   }
 
   .ldm-input {
-    @apply w-full rounded-xl border border-brand-muted/40 bg-brand-surface-elevated px-3 py-2.5 text-sm text-brand-primary placeholder:text-brand-muted-light outline-none transition focus:border-brand-primary/50 focus:ring-2 focus:ring-brand-muted/20;
+    @apply flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .ldm-btn {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium shadow-soft transition hover:shadow-soft-lg disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background;
   }
 
   .ldm-btn-primary {
-    @apply bg-brand-primary text-brand-surface hover:bg-brand-primary-hover;
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2;
   }
 
   .ldm-btn-secondary {
-    @apply border border-brand-border bg-brand-surface-elevated text-brand-primary hover:bg-brand-surface;
+    @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2;
   }
 
   .ldm-btn-ghost {
-    @apply bg-transparent text-brand-primary hover:bg-brand-muted/10;
+    @apply hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2;
   }
 
+  /* Alerts mapping */
   .ldm-alert {
-    @apply rounded-xl border px-3 py-2;
+    @apply relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7;
   }
 
   .ldm-alert-info {
-    @apply border-brand-border bg-brand-surface text-brand-primary;
+    @apply bg-background text-foreground;
   }
-
-  .ldm-alert-success {
-    @apply border-brand-muted/40 bg-brand-surface-elevated/80 text-brand-primary;
-  }
-
-  .ldm-alert-warning {
-    @apply border-amber-200 bg-amber-50 text-amber-900;
-  }
-
-  .ldm-alert-danger {
-    @apply border-red-200 bg-red-50 text-red-800;
-  }
-}
-
-html,
-body,
-#root {
-  height: 100%;
-}
-
-body {
-  @apply bg-brand-surface text-brand-primary antialiased;
 }

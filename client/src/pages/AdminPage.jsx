@@ -232,7 +232,7 @@ export function AdminPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Admins</h2>
+        <h2 className="text-xl font-semibold text-foreground">Admins</h2>
         <Button type="button" onClick={openModal} className="inline-flex items-center gap-2">
           <Plus className="h-4 w-4" />
           Add Admin
@@ -241,14 +241,14 @@ export function AdminPage() {
 
       {error && <Alert variant="danger">{error}</Alert>}
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <p className="text-sm text-gray-500">Loading admins…</p>
+            <p className="text-sm text-muted-foreground">Loading admins…</p>
           </div>
         ) : admins.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-sm text-gray-500">No admins yet.</p>
+            <p className="text-sm text-muted-foreground">No admins yet.</p>
             <Button type="button" variant="secondary" className="mt-3" onClick={openModal}>
               Add Admin
             </Button>
@@ -256,30 +256,30 @@ export function AdminPage() {
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted/50">
                   <tr>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground sm:px-6"
                     >
                       Name
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground sm:px-6"
                     >
                       Email
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground sm:px-6"
                     >
                       Status
                     </th>
                     <th
                       scope="col"
-                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:px-6"
+                      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground sm:px-6"
                     >
                       Created
                     </th>
@@ -288,13 +288,13 @@ export function AdminPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                <tbody className="divide-y divide-border bg-card">
                   {admins.map((admin) => (
-                    <tr key={admin.id} className="hover:bg-gray-50">
-                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900 sm:px-6">
+                    <tr key={admin.id} className="hover:bg-muted/50">
+                      <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-foreground sm:px-6">
                         {admin.name}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600 sm:px-6">
+                      <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground sm:px-6">
                         {admin.email}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 sm:px-6">
@@ -302,53 +302,57 @@ export function AdminPage() {
                           className={cn(
                             'inline-flex rounded-full px-2 py-1 text-xs font-medium',
                             admin.status === 'ACTIVE'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
+                              ? 'bg-green-500/10 text-green-700 dark:text-green-400 dark:bg-green-500/20'
+                              : 'bg-muted text-muted-foreground'
                           )}
                         >
                           {admin.status}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500 sm:px-6">
+                      <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground sm:px-6">
                         {formatDate(admin.createdAt)}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right text-sm sm:px-6">
                         <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openEditModal(admin)}
-                            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
                             title="Edit"
                           >
                             <Pencil className="h-4 w-4" />
-                          </button>
+                          </Button>
                           {admin.status === 'ACTIVE' ? (
-                            <button
-                              type="button"
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => openDeleteModal(admin)}
-                              className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                              className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                               title="Disable"
                             >
                               <Trash2 className="h-4 w-4" />
-                            </button>
+                            </Button>
                           ) : (
                             <>
-                              <button
-                                type="button"
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => openEnableModal(admin)}
-                                className="rounded-lg p-2 text-gray-500 hover:bg-green-50 hover:text-green-600"
+                                className="h-8 w-8 text-muted-foreground hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
                                 title="Enable"
                               >
                                 <UserCheck className="h-4 w-4" />
-                              </button>
-                              <button
-                                type="button"
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => openPermanentDeleteModal(admin)}
-                                className="rounded-lg p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                                className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                 title="Delete permanently"
                               >
                                 <Trash2 className="h-4 w-4" />
-                              </button>
+                              </Button>
                             </>
                           )}
                         </div>
@@ -360,14 +364,15 @@ export function AdminPage() {
             </div>
 
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-4 py-3 sm:px-6">
-                <p className="text-sm text-gray-600">
+              <div className="flex items-center justify-between border-t border-border bg-muted/20 px-4 py-3 sm:px-6">
+                <p className="text-sm text-muted-foreground">
                   Page {pagination.page} of {pagination.totalPages} · {pagination.total} total
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="outline"
+                    size="sm"
                     disabled={pagination.page <= 1}
                     onClick={() => handlePageChange(pagination.page - 1)}
                     className="inline-flex items-center gap-1"
@@ -377,7 +382,8 @@ export function AdminPage() {
                   </Button>
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="outline"
+                    size="sm"
                     disabled={pagination.page >= pagination.totalPages}
                     onClick={() => handlePageChange(pagination.page + 1)}
                     className="inline-flex items-center gap-1"

@@ -5,6 +5,8 @@ import { User, Settings, LogOut, ChevronDown } from 'lucide-react'
 import { clearToken } from '../../services/token'
 import { cn } from '../../utils/cn'
 
+import { ThemeToggle } from '../ui/ThemeToggle'
+
 export function Header({ title, breadcrumbs, onMenuClick }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -44,7 +46,7 @@ export function Header({ title, breadcrumbs, onMenuClick }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-border/60 bg-brand-surface-elevated/95 shadow-soft backdrop-blur-sm">
+    <header className="sticky top-0 z-30 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between gap-4 px-4 lg:px-6">
         {/* Left: menu (mobile) + title & breadcrumbs */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -91,80 +93,83 @@ export function Header({ title, breadcrumbs, onMenuClick }) {
           </div>
         </div>
 
-        {/* Right: user menu */}
-        <div className="relative shrink-0" ref={dropdownRef}>
-          <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center gap-2 rounded-xl px-2 py-2 text-brand-primary transition-colors hover:bg-brand-muted/10 sm:gap-3 sm:px-3"
-            aria-expanded={dropdownOpen}
-            aria-haspopup="true"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-primary text-xs font-semibold text-brand-surface shadow-soft">
-              {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="h-full w-full rounded-xl object-cover"
-                />
-              ) : (
-                getInitials(user?.name)
-              )}
-            </div>
-            <span className="hidden max-w-[120px] truncate text-sm font-medium sm:block">{user?.name}</span>
-            <ChevronDown
-              className={cn('h-4 w-4 text-brand-muted transition-transform', dropdownOpen && 'rotate-180')}
-            />
-          </button>
-
-          {dropdownOpen && (
-            <div
-              className="absolute right-0 mt-2 w-56 rounded-2xl border border-brand-border bg-brand-surface-elevated py-1 shadow-soft-xl"
-              role="menu"
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {/* Right: user menu */}
+          <div className="relative shrink-0" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2 rounded-xl px-2 py-2 text-brand-primary transition-colors hover:bg-brand-muted/10 sm:gap-3 sm:px-3"
+              aria-expanded={dropdownOpen}
+              aria-haspopup="true"
             >
-              <div className="border-b border-brand-border/60 px-4 py-3">
-                <div className="truncate text-sm font-medium text-brand-primary">{user?.name}</div>
-                <div className="truncate text-xs text-brand-muted">{user?.email}</div>
-                <div className="mt-0.5 text-xs font-medium capitalize text-brand-primary/80">
-                  {user?.role?.toLowerCase().replace('_', ' ')}
-                </div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-primary text-xs font-semibold text-brand-surface shadow-soft">
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="h-full w-full rounded-xl object-cover"
+                  />
+                ) : (
+                  getInitials(user?.name)
+                )}
               </div>
-              <a
-                href="/profile"
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-primary transition-colors hover:bg-brand-muted/10"
-                role="menuitem"
-                onClick={(e) => {
-                  e.preventDefault()
-                  setDropdownOpen(false)
-                  navigate('/profile')
-                }}
+              <span className="hidden max-w-[120px] truncate text-sm font-medium sm:block">{user?.name}</span>
+              <ChevronDown
+                className={cn('h-4 w-4 text-brand-muted transition-transform', dropdownOpen && 'rotate-180')}
+              />
+            </button>
+
+            {dropdownOpen && (
+              <div
+                className="absolute right-0 mt-2 w-56 rounded-2xl border border-brand-border bg-brand-surface-elevated py-1 shadow-soft-xl"
+                role="menu"
               >
-                <User className="h-4 w-4 text-brand-muted" />
-                Profile
-              </a>
-              <a
-                href="/settings"
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-primary transition-colors hover:bg-brand-muted/10"
-                role="menuitem"
-                onClick={(e) => {
-                  e.preventDefault()
-                  setDropdownOpen(false)
-                  navigate('/settings')
-                }}
-              >
-                <Settings className="h-4 w-4 text-brand-muted" />
-                Account Settings
-              </a>
-              <div className="my-1 border-t border-brand-border/60" />
-              <button
-                onClick={handleLogout}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-accent-red transition-colors hover:bg-red-50"
-                role="menuitem"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
-            </div>
-          )}
+                <div className="border-b border-brand-border/60 px-4 py-3">
+                  <div className="truncate text-sm font-medium text-brand-primary">{user?.name}</div>
+                  <div className="truncate text-xs text-brand-muted">{user?.email}</div>
+                  <div className="mt-0.5 text-xs font-medium capitalize text-brand-primary/80">
+                    {user?.role?.toLowerCase().replace('_', ' ')}
+                  </div>
+                </div>
+                <a
+                  href="/profile"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-primary transition-colors hover:bg-brand-muted/10"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setDropdownOpen(false)
+                    navigate('/profile')
+                  }}
+                >
+                  <User className="h-4 w-4 text-brand-muted" />
+                  Profile
+                </a>
+                <a
+                  href="/settings"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-brand-primary transition-colors hover:bg-brand-muted/10"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setDropdownOpen(false)
+                    navigate('/settings')
+                  }}
+                >
+                  <Settings className="h-4 w-4 text-brand-muted" />
+                  Account Settings
+                </a>
+                <div className="my-1 border-t border-brand-border/60" />
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50"
+                  role="menuitem"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

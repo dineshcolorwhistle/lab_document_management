@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getMenuItemsForRole } from '../../config/menu'
@@ -24,16 +25,19 @@ export function Sidebar({
         to={item.path}
         onClick={onMobileClose}
         className={cn(
-          'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
+          'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative',
           isActive
-            ? 'bg-brand-primary/8 text-brand-primary shadow-soft'
-            : 'text-brand-primary/80 hover:bg-brand-muted/10 hover:text-brand-primary'
+            ? 'bg-blue-600/10 text-blue-100' // Distinct active background
+            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' // Visible inactive text
         )}
       >
+        {isActive && (
+          <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-blue-500 rounded-r-md" />
+        )}
         <Icon
           className={cn(
             'h-5 w-5 flex-shrink-0 transition-colors',
-            isActive ? 'text-brand-primary' : 'text-brand-muted group-hover:text-brand-primary'
+            isActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300'
           )}
         />
         <span className={cn('truncate', isCollapsed && 'lg:sr-only')}>{item.label}</span>
@@ -45,7 +49,7 @@ export function Sidebar({
     <>
       {isMobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-brand-primary/20 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={onMobileClose}
           aria-hidden="true"
         />
@@ -53,48 +57,47 @@ export function Sidebar({
 
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 flex h-full flex-col bg-brand-surface-elevated shadow-soft-xl transition-all duration-300 ease-in-out lg:translate-x-0',
+          'fixed left-0 top-0 z-50 flex h-full flex-col bg-slate-900 shadow-xl transition-all duration-300 ease-in-out lg:translate-x-0 border-r border-slate-800',
           'w-sidebar',
           isCollapsed && 'lg:w-sidebar-collapsed',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Sidebar header / logo */}
-        <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-brand-border/60 px-3 py-2">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-800/60">
           <Link
             to="/dashboard"
             onClick={onMobileClose}
             className={cn(
-              'flex min-w-0 items-center gap-3 rounded-xl py-2 transition-colors hover:bg-brand-muted/10',
+              'flex min-w-0 items-center gap-3 py-2 transition-opacity hover:opacity-90',
               isCollapsed ? 'lg:flex-0 lg:min-w-0' : 'flex-1'
             )}
           >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-primary shadow-soft">
-              <span className="text-sm font-bold text-brand-surface">LD</span>
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 shadow-lg shadow-blue-900/20">
+              <span className="text-sm font-semibold text-white">LD</span>
             </div>
             <div className={cn('min-w-0 flex-1', isCollapsed && 'lg:sr-only')}>
-              <div className="truncate text-sm font-semibold text-brand-primary">Lab Docs</div>
-              <div className="truncate text-xs text-brand-muted">Compliance</div>
+              <div className="truncate text-base font-semibold text-white tracking-tight">Lab Docs</div>
             </div>
           </Link>
           <div className="flex items-center gap-1">
             <button
               onClick={onCollapseToggle}
               className={cn(
-                'hidden rounded-lg p-2 text-brand-muted transition-colors hover:bg-brand-muted/10 hover:text-brand-primary lg:block',
+                'hidden rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white lg:block',
                 isCollapsed && 'lg:block'
               )}
               aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             >
               {isCollapsed ? (
-                <PanelLeft className="h-5 w-5" />
+                <PanelLeft className="h-4 w-4" />
               ) : (
-                <PanelLeftClose className="h-5 w-5" />
+                <PanelLeftClose className="h-4 w-4" />
               )}
             </button>
             <button
               onClick={onMobileClose}
-              className="rounded-lg p-2 text-brand-muted transition-colors hover:bg-brand-muted/10 hover:text-brand-primary lg:hidden"
+              className="rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white lg:hidden"
               aria-label="Close menu"
             >
               <X className="h-5 w-5" />
@@ -103,13 +106,13 @@ export function Sidebar({
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 custom-scrollbar">
           <div className="space-y-1">
             {menuItems.map((item) => (
               <NavLink key={item.id} item={item} />
             ))}
             {menuItems.length === 0 && (
-              <div className="px-3 py-4 text-center text-sm text-brand-muted">
+              <div className="px-3 py-4 text-center text-sm text-slate-500">
                 No menus available
               </div>
             )}
@@ -117,19 +120,19 @@ export function Sidebar({
         </nav>
 
         {/* User footer */}
-        <div className="shrink-0 border-t border-brand-border/60 p-3">
+        <div className="shrink-0 border-t border-slate-800 p-4">
           <div
             className={cn(
-              'flex items-center gap-3 rounded-xl bg-brand-surface/80 px-3 py-2',
-              isCollapsed && 'lg:justify-center'
+              'flex items-center gap-3 rounded-xl bg-slate-800/50 px-3 py-2.5 border border-slate-700/50',
+              isCollapsed && 'lg:justify-center lg:px-2'
             )}
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-primary/10 text-xs font-semibold text-brand-primary">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-700 text-xs font-semibold text-slate-200 ring-1 ring-white/10">
               {user?.name?.charAt(0)?.toUpperCase() || 'U'}
             </div>
             <div className={cn('min-w-0 flex-1 truncate', isCollapsed && 'lg:sr-only')}>
-              <div className="truncate text-xs font-medium text-brand-primary">{user?.name}</div>
-              <div className="truncate text-xs text-brand-muted capitalize">
+              <div className="truncate text-xs font-medium text-slate-200">{user?.name}</div>
+              <div className="truncate text-[10px] text-slate-400 capitalize mt-0.5">
                 {user?.role?.toLowerCase().replace('_', ' ')}
               </div>
             </div>
