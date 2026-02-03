@@ -120,8 +120,8 @@ export async function deleteLabOwnerPermanent(id) {
  * @param {{ page?: number; limit?: number }} params
  * @returns {Promise<{ data: Array<{ id: string; name: string; email: string; status: string; createdAt: string }>; pagination: { page: number; limit: number; total: number; totalPages: number } }>}
  */
-export async function listLabTechnicians({ page = 1, limit = 10 } = {}) {
-  const { data } = await api.get('/users/lab-technicians', { params: { page, limit } })
+export async function listLabTechnicians({ page = 1, limit = 10, labId } = {}) {
+  const { data } = await api.get('/users/lab-technicians', { params: { page, limit, labId } })
   return data
 }
 

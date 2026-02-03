@@ -9,6 +9,8 @@ import { LabManagementPage } from '../pages/LabManagementPage'
 import { ForgotPasswordPage } from '../pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { ProfilePage } from '../pages/ProfilePage'
+import { DocumentTemplatesPage } from '../pages/DocumentTemplatesPage'
+import { MachineTypesPage } from '../pages/MachineTypesPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
 import { RequireRole } from '../components/rbac/RequireRole'
@@ -103,6 +105,26 @@ export function AppRoutes() {
           element={
             <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
               <LabOwnersPage />
+            </RequireRole>
+          }
+        />
+
+        {/* Document Template Management — ADMIN, SUPER_ADMIN */}
+        <Route
+          path="/document-templates"
+          element={
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
+              <DocumentTemplatesPage />
+            </RequireRole>
+          }
+        />
+
+        {/* Machine Type Management — ADMIN, SUPER_ADMIN */}
+        <Route
+          path="/machine-types"
+          element={
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
+              <MachineTypesPage />
             </RequireRole>
           }
         />

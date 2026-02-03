@@ -9,6 +9,7 @@ const { sendMail } = require('../services/email.service')
 const { ROLES } = require('../constants/roles')
 
 const User = require('../models/User')
+const Lab = require('../models/Lab')
 
 const createAdminSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -423,8 +424,21 @@ const listLabTechnicians = asyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(req.query.page, 10) || 1)
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 10))
   const skip = (page - 1) * limit
+  const { labId } = req.query
 
   const filter = { role: ROLES.LAB_TECHNICIAN }
+
+  // Filter by Lab if provided
+  if (labId) {
+    const lab = await Lab.findById(labId)
+    if (lab) {
+      filter._id = { $in: lab.labTechnicians }
+    } else {
+      // If lab provided but not found, return empty
+      filter._id = { $in: [] }
+    }
+  }
+
   const [data, total] = await Promise.all([
     User.find(filter)
       .select('name email status createdAt')

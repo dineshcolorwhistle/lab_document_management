@@ -317,8 +317,42 @@ const deleteLab = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Lab deleted.' })
 })
 
+/**
+ * GET /labs/my-labs
+ * List labs assigned to the current user (Owner or Technician).
+ */
+const getMyLabs = asyncHandler(async (req, res) => {
+  const userId = req.user.id
+  const { role } = req.user
+
+  let query = {}
+  if (role === ROLES.LAB_OWNER) {
+    query = { labOwners: userId }
+  } else if (role === ROLES.LAB_TECHNICIAN) {
+    query = { labTechnicians: userId }
+  } else if (role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN) {
+    // Admins usually see everything, but for this specific dropdown logic we might not need this.
+    // However, let's just return all active labs for them if they ever hit this endpoint.
+    query = {}
+  }
+
+  const labs = await Lab.find(query)
+    .select('name _id') // Only need name and id for dropdown
+    .sort({ name: 1 }) // Alphabetical order
+    .lean()
+
+  res.json({
+    success: true,
+    data: labs.map((lab) => ({
+      id: String(lab._id),
+      name: lab.name,
+    })),
+  })
+})
+
 module.exports = {
   listLabs,
+  getMyLabs,
   getLab,
   createLab,
   updateLab,

@@ -1,6 +1,7 @@
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { LabProvider } from './contexts/LabContext'
 import { AppRoutes } from './routes/AppRoutes'
 
 function App() {
@@ -8,7 +9,9 @@ function App() {
     <BrowserRouter>
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <AuthProvider>
-          <AppRoutes />
+          <LabProvider>
+            <AppRoutes />
+          </LabProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

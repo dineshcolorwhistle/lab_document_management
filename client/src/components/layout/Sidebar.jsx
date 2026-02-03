@@ -2,8 +2,16 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getMenuItemsForRole } from '../../config/menu'
-import { X, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { X, PanelLeftClose, PanelLeft, ChevronDown, Check, Building2 } from 'lucide-react'
 import { cn } from '../../utils/cn'
+import { useLab } from '../../contexts/LabContext'
+import { ROLES } from '../../constants/roles'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/DropdownMenu'
 
 export function Sidebar({
   isMobileOpen,
@@ -14,6 +22,9 @@ export function Sidebar({
   const { user } = useAuth()
   const location = useLocation()
   const menuItems = getMenuItemsForRole(user?.role)
+
+  const { selectedLab, selectLab, labs } = useLab()
+  const showLabSelector = user?.role === ROLES.LAB_OWNER || user?.role === ROLES.LAB_TECHNICIAN
 
   const NavLink = ({ item }) => {
     const Icon = item.icon
@@ -65,21 +76,72 @@ export function Sidebar({
       >
         {/* Sidebar header / logo */}
         <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-800/60">
-          <Link
-            to="/dashboard"
-            onClick={onMobileClose}
-            className={cn(
-              'flex min-w-0 items-center gap-3 py-2 transition-opacity hover:opacity-90',
-              isCollapsed ? 'lg:flex-0 lg:min-w-0' : 'flex-1'
-            )}
-          >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 shadow-lg shadow-blue-900/20">
-              <span className="text-sm font-semibold text-white">LD</span>
-            </div>
-            <div className={cn('min-w-0 flex-1', isCollapsed && 'lg:sr-only')}>
-              <div className="truncate text-base font-semibold text-white tracking-tight">Lab Docs</div>
-            </div>
-          </Link>
+          {showLabSelector ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    'flex min-w-0 items-center gap-2 py-1.5 px-2 bg-slate-800/40 border border-slate-700/50 rounded-lg transition-all hover:bg-slate-800/60 hover:border-slate-600 text-left outline-none',
+                    isCollapsed ? 'lg:flex-0 lg:min-w-0 p-1' : 'flex-1'
+                  )}
+                >
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 shadow-lg shadow-blue-900/20">
+                    <span className="text-sm font-semibold text-white">
+                      {selectedLab ? selectedLab.name.substring(0, 2).toUpperCase() : 'LD'}
+                    </span>
+                  </div>
+                  <div className={cn('min-w-0 flex-1', isCollapsed && 'lg:sr-only')}>
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="truncate text-sm font-semibold text-white">
+                        {selectedLab ? selectedLab.name : 'Select Lab'}
+                      </div>
+                      <ChevronDown className="h-3 w-3 text-slate-400" />
+                    </div>
+                  </div>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                sideOffset={8}
+                className="w-56 bg-slate-900 border-slate-800 text-slate-200"
+              >
+                {labs.length > 0 ? (
+                  labs.map((lab) => (
+                    <DropdownMenuItem
+                      key={lab.id}
+                      onClick={() => selectLab(lab.id)}
+                      className="focus:bg-slate-800 focus:text-white cursor-pointer"
+                    >
+                      <Building2 className="mr-2 h-4 w-4 opacity-50" />
+                      <span className="flex-1 truncate">{lab.name}</span>
+                      {selectedLab?.id === lab.id && <Check className="ml-auto h-4 w-4" />}
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <div className="p-2 text-xs text-slate-500 text-center">No labs assigned</div>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link
+              to="/dashboard"
+              onClick={onMobileClose}
+              className={cn(
+                'flex min-w-0 items-center gap-3 py-2 transition-opacity hover:opacity-90',
+                isCollapsed ? 'lg:flex-0 lg:min-w-0' : 'flex-1'
+              )}
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 shadow-lg shadow-blue-900/20">
+                <span className="text-sm font-semibold text-white">LD</span>
+              </div>
+              <div className={cn('min-w-0 flex-1', isCollapsed && 'lg:sr-only')}>
+                <div className="truncate text-base font-semibold text-white tracking-tight">
+                  Lab Docs
+                </div>
+              </div>
+            </Link>
+          )}
+
           <div className="flex items-center gap-1">
             <button
               onClick={onCollapseToggle}

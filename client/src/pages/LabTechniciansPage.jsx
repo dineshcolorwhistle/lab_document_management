@@ -8,6 +8,7 @@ import {
   deleteLabTechnicianPermanent,
 } from '../services/users'
 import { useAuth } from '../contexts/AuthContext'
+import { useLab } from '../contexts/LabContext'
 import { getPermissionForMenu } from '../config/menu'
 import { PERMISSIONS } from '../config/menu'
 import { Button } from '../components/ui/Button'
@@ -34,6 +35,7 @@ function formatDate(value) {
 
 export function LabTechniciansPage() {
   const { user } = useAuth()
+  const { selectedLab } = useLab()
   const canEdit = getPermissionForMenu('lab-technician', user?.role) === PERMISSIONS.CRUD
 
   const [technicians, setTechnicians] = useState([])
@@ -76,7 +78,12 @@ export function LabTechniciansPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await listLabTechnicians({ page, limit: DEFAULT_LIMIT })
+      // If user is Lab Owner or Tech, strictly filter by selectedLab.
+      // If admin, they might see all or filter if we implemented a global picker for them (not yet).
+      // For now, if selectedLab is present, use it.
+      const labId = selectedLab?.id
+
+      const res = await listLabTechnicians({ page, limit: DEFAULT_LIMIT, labId })
       setTechnicians(res.data)
       setPagination(res.pagination)
     } catch (err) {
@@ -89,7 +96,7 @@ export function LabTechniciansPage() {
 
   useEffect(() => {
     fetchTechnicians(1)
-  }, [])
+  }, [selectedLab?.id])
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.totalPages) return

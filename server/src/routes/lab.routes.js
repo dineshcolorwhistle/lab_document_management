@@ -1,5 +1,5 @@
 const express = require('express')
-const { listLabs, getLab, createLab, updateLab, deleteLab } = require('../controllers/lab.controller')
+const { listLabs, getMyLabs, getLab, createLab, updateLab, deleteLab } = require('../controllers/lab.controller')
 const { requireAuth } = require('../middlewares/auth')
 const { authorizeRoles } = require('../middlewares/rbac')
 const { ROLES } = require('../constants/roles')
@@ -12,6 +12,13 @@ router.get(
   requireAuth,
   authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN),
   listLabs,
+)
+
+// My Labs — authenticated users (specifically Owner/Tech to get their labs)
+router.get(
+  '/my-labs',
+  requireAuth,
+  getMyLabs,
 )
 
 router.get(

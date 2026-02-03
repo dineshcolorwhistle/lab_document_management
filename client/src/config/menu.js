@@ -6,6 +6,8 @@ import {
   FlaskConical,
   Building2,
   Wrench,
+  FileStack,
+  Settings2,
 } from 'lucide-react'
 import { ROLES } from '../constants/roles'
 
@@ -95,6 +97,20 @@ export const menuItems = [
     path: '/labs',
     icon: FlaskConical,
     roles: [ROLES.LAB_OWNER],
+  },
+  {
+    id: 'document-template',
+    label: 'Document Template',
+    path: '/document-templates',
+    icon: FileStack,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+  },
+  {
+    id: 'machine-type',
+    label: 'Machine Type',
+    path: '/machine-types',
+    icon: Settings2,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
 ]
 

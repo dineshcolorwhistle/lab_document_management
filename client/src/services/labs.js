@@ -45,3 +45,11 @@ export async function deleteLab(id) {
   const { data } = await api.delete(`/labs/${id}`)
   return data
 }
+
+/**
+ * @returns {Promise<{ data: Array<{ id: string; name: string }> }>}
+ */
+export async function getMyLabs() {
+  const { data } = await api.get('/labs/my-labs')
+  return data
+}
