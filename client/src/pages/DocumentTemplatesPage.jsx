@@ -9,8 +9,10 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Alert } from '../components/ui/Alert'
 import { Modal } from '../components/ui/Modal'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, FileStack } from 'lucide-react'
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, FileStack, Eye } from 'lucide-react'
 import { cn } from '../utils/cn'
+import { useAuth } from '../contexts/AuthContext'
+import { getPermissionForMenu, PERMISSIONS } from '../config/menu'
 
 const FREQUENCIES = [
     { value: 'DAILY', label: 'Daily' },
@@ -24,6 +26,9 @@ const FREQUENCIES = [
 const FILE_TYPES = ['pdf', 'docx', 'jpg']
 
 export function DocumentTemplatesPage() {
+    const { user } = useAuth()
+    const canEdit = getPermissionForMenu('document-template', user?.role) === PERMISSIONS.CRUD
+
     const [templates, setTemplates] = useState([])
     const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 })
     const [loading, setLoading] = useState(true)
@@ -137,9 +142,11 @@ export function DocumentTemplatesPage() {
                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Document Templates</h2>
                     <p className="text-muted-foreground text-sm mt-1">Manage standard document requirements and mappings.</p>
                 </div>
-                <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" /> Add Template
-                </Button>
+                {canEdit && (
+                    <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" /> Add Template
+                    </Button>
+                )}
             </div>
 
             {error && <Alert variant="danger">{error}</Alert>}
@@ -174,12 +181,14 @@ export function DocumentTemplatesPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <button onClick={() => handleOpenModal(item)} className="p-1.5 text-muted-foreground hover:text-blue-500 transition-colors">
-                                            <Pencil className="h-4 w-4" />
+                                        <button onClick={() => handleOpenModal(item)} className="p-1.5 text-muted-foreground hover:text-blue-500 transition-colors" title={canEdit ? "Edit" : "View Details"}>
+                                            {canEdit ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                         </button>
-                                        <button onClick={() => { setDeletingId(item.id); setDeleteModalOpen(true); }} className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors">
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                        {canEdit && (
+                                            <button onClick={() => { setDeletingId(item.id); setDeleteModalOpen(true); }} className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors" title="Delete">
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -196,16 +205,17 @@ export function DocumentTemplatesPage() {
             </div>
 
             {modalOpen && (
-                <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingTemplate ? 'Edit Template' : 'Add New Template'} className="max-w-2xl">
+                <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingTemplate ? (canEdit ? 'Edit Template' : 'Template Details') : 'Add New Template'} className="max-w-2xl">
                     <form onSubmit={handleSubmit} className="space-y-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
                                 <label className="text-sm font-medium mb-1 block">Document Name</label>
-                                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required placeholder="Enter document name" />
+                                <Input disabled={!canEdit} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required placeholder="Enter document name" />
                             </div>
                             <div className="col-span-2">
                                 <label className="text-sm font-medium mb-1 block">Description</label>
                                 <textarea
+                                    disabled={!canEdit}
                                     className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     value={form.description}
                                     onChange={e => setForm({ ...form, description: e.target.value })}
@@ -215,7 +225,8 @@ export function DocumentTemplatesPage() {
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Frequency</label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    disabled={!canEdit}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                                     value={form.frequency} onChange={e => setForm({ ...form, frequency: e.target.value })}
                                 >
                                     {FREQUENCIES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
@@ -224,7 +235,8 @@ export function DocumentTemplatesPage() {
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Status</label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    disabled={!canEdit}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                                     value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
                                 >
                                     <option value="ACTIVE">Active</option>
@@ -239,8 +251,9 @@ export function DocumentTemplatesPage() {
                                             <input
                                                 type="checkbox"
                                                 checked={form.allowedFileTypes.includes(type)}
-                                                onChange={() => toggleFileType(type)}
-                                                className="rounded border-border"
+                                                onChange={() => canEdit && toggleFileType(type)}
+                                                disabled={!canEdit}
+                                                className="rounded border-border disabled:opacity-50"
                                             />
                                             <span className="text-sm uppercase">{type}</span>
                                         </label>
@@ -249,12 +262,13 @@ export function DocumentTemplatesPage() {
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1 block">NABL Clause Mapping</label>
-                                <Input value={form.nablClauseMapping} onChange={e => setForm({ ...form, nablClauseMapping: e.target.value })} placeholder="e.g. 7.1.1, 8.5" />
+                                <Input disabled={!canEdit} value={form.nablClauseMapping} onChange={e => setForm({ ...form, nablClauseMapping: e.target.value })} placeholder="e.g. 7.1.1, 8.5" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Help Content Type</label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    disabled={!canEdit}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                                     value={form.helpContentType} onChange={e => setForm({ ...form, helpContentType: e.target.value })}
                                 >
                                     <option value="NONE">None</option>
@@ -268,18 +282,19 @@ export function DocumentTemplatesPage() {
                                     <label className="text-sm font-medium mb-1 block">Help Content {form.helpContentType === 'TEXT' ? 'Body' : 'Link'}</label>
                                     {form.helpContentType === 'TEXT' ? (
                                         <textarea
-                                            className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                            disabled={!canEdit}
+                                            className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                                             value={form.helpContentValue} onChange={e => setForm({ ...form, helpContentValue: e.target.value })}
                                         />
                                     ) : (
-                                        <Input value={form.helpContentValue} onChange={e => setForm({ ...form, helpContentValue: e.target.value })} placeholder="https://..." />
+                                        <Input disabled={!canEdit} value={form.helpContentValue} onChange={e => setForm({ ...form, helpContentValue: e.target.value })} placeholder="https://..." />
                                     )}
                                 </div>
                             )}
                         </div>
                         <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-                            <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save Template'}</Button>
+                            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>{canEdit ? 'Cancel' : 'Close'}</Button>
+                            {canEdit && <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save Template'}</Button>}
                         </div>
                     </form>
                 </Modal>

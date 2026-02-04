@@ -13,10 +13,12 @@ const { ROLES } = require('../constants/roles')
 const router = express.Router()
 
 router.use(requireAuth)
-router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN))
 
 router.get('/', listDocumentTemplates)
 router.get('/:id', getDocumentTemplate)
+
+router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN))
+
 router.post('/', createDocumentTemplate)
 router.patch('/:id', updateDocumentTemplate)
 router.delete('/:id', deleteDocumentTemplate)

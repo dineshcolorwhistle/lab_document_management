@@ -34,20 +34,20 @@ export function Modal({ open, onClose, title, children, className }) {
       />
       <div
         className={cn(
-          'relative w-full max-h-[90vh] flex flex-col rounded-xl border border-gray-200 bg-white shadow-xl my-auto',
+          'relative w-full max-h-[90vh] flex flex-col rounded-xl border border-border bg-card shadow-xl my-auto',
           'max-w-md sm:max-w-lg',
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4">
-          <h2 id="modal-title" className="text-base font-semibold text-gray-900 sm:text-lg truncate pr-2">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
+          <h2 id="modal-title" className="text-base font-semibold text-card-foreground sm:text-lg truncate pr-2">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 shrink-0"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground shrink-0"
             aria-label="Close"
           >
             <X className="h-5 w-5" />

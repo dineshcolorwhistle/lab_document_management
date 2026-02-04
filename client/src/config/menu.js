@@ -8,6 +8,7 @@ import {
   Wrench,
   FileStack,
   Settings2,
+  Cpu,
 } from 'lucide-react'
 import { ROLES } from '../constants/roles'
 
@@ -96,7 +97,7 @@ export const menuItems = [
     label: 'Lab',
     path: '/labs',
     icon: FlaskConical,
-    roles: [ROLES.LAB_OWNER],
+    roles: [],
   },
   {
     id: 'document-template',
@@ -110,7 +111,21 @@ export const menuItems = [
     label: 'Machine Type',
     path: '/machine-types',
     icon: Settings2,
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN],
+    rolePermissions: {
+      [ROLES.LAB_OWNER]: PERMISSIONS.VIEW,
+      [ROLES.LAB_TECHNICIAN]: PERMISSIONS.VIEW,
+    },
+  },
+  {
+    id: 'machine-instance',
+    label: 'Machine Instance Management',
+    path: '/machine-instance-management',
+    icon: Cpu,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN],
+    rolePermissions: {
+      [ROLES.LAB_TECHNICIAN]: PERMISSIONS.VIEW,
+    },
   },
 ]
 

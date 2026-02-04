@@ -11,15 +11,16 @@ import { ResetPasswordPage } from '../pages/ResetPasswordPage'
 import { ProfilePage } from '../pages/ProfilePage'
 import { DocumentTemplatesPage } from '../pages/DocumentTemplatesPage'
 import { MachineTypesPage } from '../pages/MachineTypesPage'
+import { MachineInstancesPage } from '../pages/MachineInstancesPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
 import { RequireRole } from '../components/rbac/RequireRole'
 import { ROLES } from '../constants/roles'
 
 const Placeholder = ({ title, desc = 'Coming soon...' }) => (
-  <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-    <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
-    <p className="mt-2 text-gray-600">{desc}</p>
+  <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+    <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+    <p className="mt-2 text-muted-foreground">{desc}</p>
   </div>
 )
 
@@ -123,8 +124,18 @@ export function AppRoutes() {
         <Route
           path="/machine-types"
           element={
-            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN]}>
               <MachineTypesPage />
+            </RequireRole>
+          }
+        />
+
+        {/* Machine Instance Management — ADMIN, SUPER_ADMIN, LAB_OWNER */}
+        <Route
+          path="/machine-instance-management"
+          element={
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN]}>
+              <MachineInstancesPage />
             </RequireRole>
           }
         />
@@ -133,7 +144,7 @@ export function AppRoutes() {
         <Route
           path="/labs"
           element={
-            <RequireRole allowedRoles={[ROLES.LAB_OWNER]}>
+            <RequireRole allowedRoles={[]}>
               <Placeholder title="Lab" />
             </RequireRole>
           }

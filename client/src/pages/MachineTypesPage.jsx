@@ -10,10 +10,15 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Alert } from '../components/ui/Alert'
 import { Modal } from '../components/ui/Modal'
-import { Plus, Pencil, Trash2, Settings2, Check } from 'lucide-react'
+import { Plus, Pencil, Trash2, Settings2, Check, Eye } from 'lucide-react'
 import { cn } from '../utils/cn'
+import { useAuth } from '../contexts/AuthContext'
+import { getPermissionForMenu, PERMISSIONS } from '../config/menu'
 
 export function MachineTypesPage() {
+    const { user } = useAuth()
+    const canEdit = getPermissionForMenu('machine-type', user?.role) === PERMISSIONS.CRUD
+
     const [items, setItems] = useState([])
     const [docTemplates, setDocTemplates] = useState([])
     const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 })
@@ -129,9 +134,11 @@ export function MachineTypesPage() {
                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Machine Types</h2>
                     <p className="text-muted-foreground text-sm mt-1">Configure equipment categories and default maintenance cycles.</p>
                 </div>
-                <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" /> Add Machine Type
-                </Button>
+                {canEdit && (
+                    <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" /> Add Machine Type
+                    </Button>
+                )}
             </div>
 
             {error && <Alert variant="danger">{error}</Alert>}
@@ -177,12 +184,14 @@ export function MachineTypesPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <button onClick={() => handleOpenModal(item)} className="p-1.5 text-muted-foreground hover:text-blue-500 transition-colors">
-                                            <Pencil className="h-4 w-4" />
+                                        <button onClick={() => handleOpenModal(item)} className="p-1.5 text-muted-foreground hover:text-blue-500 transition-colors" title={canEdit ? "Edit" : "View Details"}>
+                                            {canEdit ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                         </button>
-                                        <button onClick={() => { setDeletingId(item.id); setDeleteModalOpen(true); }} className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors">
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                        {canEdit && (
+                                            <button onClick={() => { setDeletingId(item.id); setDeleteModalOpen(true); }} className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors" title="Delete">
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -192,29 +201,30 @@ export function MachineTypesPage() {
             </div>
 
             {modalOpen && (
-                <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingItem ? 'Edit Machine Type' : 'Add Machine Type'} className="max-w-3xl">
+                <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingItem ? (canEdit ? 'Edit Machine Type' : 'Machine Type Details') : 'Add Machine Type'} className="max-w-3xl">
                     <form onSubmit={handleSubmit} className="space-y-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Machine Type Name</label>
-                                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required placeholder="e.g. Microscope, Centrifuge" />
+                                <Input disabled={!canEdit} value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required placeholder="e.g. Microscope, Centrifuge" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Category</label>
-                                <Input value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="e.g. Diagnostic, Research" />
+                                <Input disabled={!canEdit} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="e.g. Diagnostic, Research" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Calibration Frequency</label>
-                                <Input value={form.defaultCalibrationFrequency} onChange={e => setForm({ ...form, defaultCalibrationFrequency: e.target.value })} placeholder="e.g. 6 Months" />
+                                <Input disabled={!canEdit} value={form.defaultCalibrationFrequency} onChange={e => setForm({ ...form, defaultCalibrationFrequency: e.target.value })} placeholder="e.g. 6 Months" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Maintenance Frequency</label>
-                                <Input value={form.defaultMaintenanceFrequency} onChange={e => setForm({ ...form, defaultMaintenanceFrequency: e.target.value })} placeholder="e.g. 3 Months" />
+                                <Input disabled={!canEdit} value={form.defaultMaintenanceFrequency} onChange={e => setForm({ ...form, defaultMaintenanceFrequency: e.target.value })} placeholder="e.g. 3 Months" />
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Status</label>
                                 <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    disabled={!canEdit}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all disabled:opacity-50"
                                     value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
                                 >
                                     <option value="ACTIVE">Active</option>
@@ -224,29 +234,33 @@ export function MachineTypesPage() {
                             <div className="col-span-2">
                                 <label className="text-sm font-medium mb-1 block">Notes</label>
                                 <textarea
-                                    className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    disabled={!canEdit}
+                                    className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all disabled:opacity-50"
                                     value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
                                 />
                             </div>
                             <div className="col-span-2">
-                                <label className="text-sm font-medium mb-2 block">Required Documents</label>
-                                <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-3 border border-border rounded-lg bg-muted/20">
+                                <label className="text-sm font-medium mb-2 block text-foreground">Required Documents</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-3 border border-border rounded-lg bg-muted/50">
                                     {docTemplates.map(doc => (
                                         <label key={doc.id} className={cn(
                                             "flex items-center gap-2 p-2 rounded-md border transition-all cursor-pointer",
-                                            form.requiredDocumentTemplates.includes(doc.id) ? "bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-400" : "bg-card border-border hover:border-blue-500/30"
+                                            form.requiredDocumentTemplates.includes(doc.id)
+                                                ? "bg-primary/10 border-primary/30 text-primary"
+                                                : "bg-background border-border hover:border-primary/30 text-muted-foreground"
                                         )}>
                                             <input
                                                 type="checkbox"
                                                 className="hidden"
                                                 checked={form.requiredDocumentTemplates.includes(doc.id)}
-                                                onChange={() => toggleDocTemplate(doc.id)}
+                                                onChange={() => canEdit && toggleDocTemplate(doc.id)}
+                                                disabled={!canEdit}
                                             />
                                             <div className={cn(
-                                                "w-4 h-4 rounded border flex items-center justify-center",
-                                                form.requiredDocumentTemplates.includes(doc.id) ? "bg-blue-500 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" : "border-muted-foreground/30"
+                                                "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                                                form.requiredDocumentTemplates.includes(doc.id) ? "bg-primary border-primary" : "border-input bg-background"
                                             )}>
-                                                {form.requiredDocumentTemplates.includes(doc.id) && <Check className="h-3 w-3 text-white" />}
+                                                {form.requiredDocumentTemplates.includes(doc.id) && <Check className="h-3 w-3 text-primary-foreground" />}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="text-xs font-semibold truncate">{doc.name}</div>
@@ -259,8 +273,8 @@ export function MachineTypesPage() {
                             </div>
                         </div>
                         <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-                            <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save Machine Type'}</Button>
+                            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>{canEdit ? 'Cancel' : 'Close'}</Button>
+                            {canEdit && <Button type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save Machine Type'}</Button>}
                         </div>
                     </form>
                 </Modal>
@@ -270,9 +284,9 @@ export function MachineTypesPage() {
                 <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Delete Machine Type">
                     <div className="p-4 space-y-4">
                         <p className="text-sm text-muted-foreground">Are you sure you want to delete this machine type? Existing machines of this type will not be deleted but will lose their categorical link.</p>
-                        <div className="flex justify-end gap-3">
+                        <div className="flex justify-end gap-3 pt-2">
                             <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
-                            <Button variant="danger" onClick={handleDelete}>Delete Permanently</Button>
+                            <Button variant="destructive" onClick={handleDelete}>Delete Permanently</Button>
                         </div>
                     </div>
                 </Modal>
