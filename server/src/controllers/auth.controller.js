@@ -166,10 +166,12 @@ const updateProfile = asyncHandler(async (req, res) => {
   if (req.file) {
     // Delete old image if it exists
     if (user.profileImage && user.profileImage.startsWith('uploads/')) {
-      const oldPath = path.join(process.cwd(), user.profileImage)
+      const oldPath = path.join(__dirname, '..', '..', user.profileImage)
       await fs.unlink(oldPath).catch(() => { })
     }
-    user.profileImage = req.file.path.replace(/\\/g, '/') // Ensure forward slashes for URL
+    // Store relative path for URL
+    const fileName = path.basename(req.file.path)
+    user.profileImage = `uploads/profiles/${fileName}`
   }
 
   await user.save()

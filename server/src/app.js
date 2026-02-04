@@ -25,7 +25,12 @@ app.use(express.urlencoded({ extended: false }))
 
 // Serve static files from the uploads directory
 const path = require('path')
-app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')))
+const fs = require('fs')
+const uploadsPath = path.join(__dirname, '..', 'uploads')
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true })
+}
+app.use('/api/uploads', express.static(uploadsPath))
 
 if (env.NODE_ENV !== 'test') {
   app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'))
