@@ -27,7 +27,7 @@ export function Sidebar({
   const { selectedLab, selectLab, labs } = useLab()
   const showLabSelector = user?.role === ROLES.LAB_OWNER || user?.role === ROLES.LAB_TECHNICIAN
 
-  const baseUrl = API_URL.replace(/\/api$/, '')
+  const baseUrl = API_URL
 
   const NavLink = ({ item }) => {
     const Icon = item.icon

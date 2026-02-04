@@ -27,7 +27,7 @@ export function ProfilePage() {
     const [passwordLoading, setPasswordLoading] = useState(false)
     const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' })
 
-    const baseUrl = API_URL.replace(/\/api$/, '')
+    const baseUrl = API_URL
 
     useEffect(() => {
         if (user) {

@@ -14,7 +14,7 @@ export function Header({ title, breadcrumbs, onMenuClick }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
 
-  const baseUrl = API_URL.replace(/\/api$/, '')
+  const baseUrl = API_URL
 
   useEffect(() => {
     function handleClickOutside(event) {
