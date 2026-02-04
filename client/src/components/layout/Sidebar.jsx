@@ -6,6 +6,7 @@ import { X, PanelLeftClose, PanelLeft, ChevronDown, Check, Building2 } from 'luc
 import { cn } from '../../utils/cn'
 import { useLab } from '../../contexts/LabContext'
 import { ROLES } from '../../constants/roles'
+import { API_URL } from '../../utils/env'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +26,8 @@ export function Sidebar({
 
   const { selectedLab, selectLab, labs } = useLab()
   const showLabSelector = user?.role === ROLES.LAB_OWNER || user?.role === ROLES.LAB_TECHNICIAN
+
+  const baseUrl = API_URL.replace(/\/api$/, '')
 
   const NavLink = ({ item }) => {
     const Icon = item.icon
@@ -189,8 +192,16 @@ export function Sidebar({
               isCollapsed && 'lg:justify-center lg:px-2'
             )}
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-700 text-xs font-semibold text-slate-200 ring-1 ring-white/10">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-700 text-xs font-semibold text-slate-200 ring-1 ring-white/10">
+              {user?.profileImage ? (
+                <img
+                  src={`${baseUrl}/${user.profileImage}`}
+                  alt={user.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                user?.name?.charAt(0)?.toUpperCase() || 'U'
+              )}
             </div>
             <div className={cn('min-w-0 flex-1 truncate', isCollapsed && 'lg:sr-only')}>
               <div className="truncate text-xs font-medium text-slate-200">{user?.name}</div>

@@ -64,6 +64,7 @@ const login = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      profileImage: user.profileImage,
     },
   })
 })
@@ -134,6 +135,7 @@ const me = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      profileImage: user.profileImage,
     },
   })
 })
@@ -147,15 +149,29 @@ const updatePasswordSchema = z.object({
   newPassword: z.string().min(8),
 })
 
+const fs = require('fs').promises
+const path = require('path')
+
 const updateProfile = asyncHandler(async (req, res) => {
   const { name } = updateProfileSchema.parse(req.body)
 
   const user = await User.findById(req.user.id)
   if (!user) {
+    if (req.file) await fs.unlink(req.file.path).catch(() => { })
     throw new AppError('User not found', { statusCode: 404 })
   }
 
   user.name = name
+
+  if (req.file) {
+    // Delete old image if it exists
+    if (user.profileImage && user.profileImage.startsWith('uploads/')) {
+      const oldPath = path.join(process.cwd(), user.profileImage)
+      await fs.unlink(oldPath).catch(() => { })
+    }
+    user.profileImage = req.file.path.replace(/\\/g, '/') // Ensure forward slashes for URL
+  }
+
   await user.save()
 
   res.json({
@@ -165,6 +181,7 @@ const updateProfile = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      profileImage: user.profileImage,
     },
   })
 })

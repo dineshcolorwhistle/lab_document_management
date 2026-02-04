@@ -6,12 +6,15 @@ import { clearToken } from '../../services/token'
 import { cn } from '../../utils/cn'
 
 import { ThemeToggle } from '../ui/ThemeToggle'
+import { API_URL } from '../../utils/env'
 
 export function Header({ title, breadcrumbs, onMenuClick }) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef(null)
+
+  const baseUrl = API_URL.replace(/\/api$/, '')
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -103,12 +106,12 @@ export function Header({ title, breadcrumbs, onMenuClick }) {
               aria-expanded={dropdownOpen}
               aria-haspopup="true"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-primary text-xs font-semibold text-brand-surface shadow-soft">
-                {user?.avatar ? (
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-xl bg-brand-primary text-xs font-semibold text-brand-surface shadow-soft">
+                {user?.profileImage ? (
                   <img
-                    src={user.avatar}
+                    src={`${baseUrl}/${user.profileImage}`}
                     alt={user.name}
-                    className="h-full w-full rounded-xl object-cover"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
                   getInitials(user?.name)

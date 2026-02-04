@@ -36,7 +36,7 @@ const listAdmins = asyncHandler(async (req, res) => {
   const filter = { role: ROLES.ADMIN }
   const [data, total] = await Promise.all([
     User.find(filter)
-      .select('name email status createdAt')
+      .select('name email status profileImage createdAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -53,6 +53,7 @@ const listAdmins = asyncHandler(async (req, res) => {
       name: u.name,
       email: u.email,
       status: u.status,
+      profileImage: u.profileImage,
       createdAt: u.createdAt,
     })),
     pagination: {
@@ -223,7 +224,7 @@ const listLabOwners = asyncHandler(async (req, res) => {
   const filter = { role: ROLES.LAB_OWNER }
   const [data, total] = await Promise.all([
     User.find(filter)
-      .select('name email status createdAt')
+      .select('name email status profileImage createdAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -240,6 +241,7 @@ const listLabOwners = asyncHandler(async (req, res) => {
       name: u.name,
       email: u.email,
       status: u.status,
+      profileImage: u.profileImage,
       createdAt: u.createdAt,
     })),
     pagination: {
@@ -441,7 +443,7 @@ const listLabTechnicians = asyncHandler(async (req, res) => {
 
   const [data, total] = await Promise.all([
     User.find(filter)
-      .select('name email status createdAt')
+      .select('name email status profileImage createdAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -458,6 +460,7 @@ const listLabTechnicians = asyncHandler(async (req, res) => {
       name: u.name,
       email: u.email,
       status: u.status,
+      profileImage: u.profileImage,
       createdAt: u.createdAt,
     })),
     pagination: {

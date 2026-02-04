@@ -23,6 +23,10 @@ app.use(
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: false }))
 
+// Serve static files from the uploads directory
+const path = require('path')
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+
 if (env.NODE_ENV !== 'test') {
   app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 }

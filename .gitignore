@@ -54,8 +54,8 @@ server/.env.*
 *.sqlite3
 
 # uploads (commonly local only; S3 is primary)
-uploads/
-server/uploads/
+# uploads/
+# server/uploads/
 
 # OS / editor
 .DS_Store

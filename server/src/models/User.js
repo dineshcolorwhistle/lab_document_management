@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema(
     // Future: restrict by assigned labs and/or ownership
     assignedLabs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lab', default: [] }],
 
+    // Optional profile image path or URL
+    profileImage: { type: String, required: false },
+
     // Optional app-scope field (useful for multi-tenant in the future)
     tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: false, index: true },
   },

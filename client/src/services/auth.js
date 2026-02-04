@@ -20,9 +20,9 @@ export async function resetPassword({ token, password }) {
   return data
 }
 
-export async function updateProfile({ name }) {
-  const { data } = await api.patch('/auth/me/profile', { name })
-  return data
+export async function updateProfile(data) {
+  const { data: response } = await api.patch('/auth/me/profile', data)
+  return response
 }
 
 export async function updatePassword({ currentPassword, newPassword }) {
