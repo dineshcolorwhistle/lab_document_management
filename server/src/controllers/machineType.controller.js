@@ -24,7 +24,7 @@ const listMachineTypes = asyncHandler(async (req, res) => {
 
     const [data, total] = await Promise.all([
         MachineType.find(filter)
-            .populate('requiredDocumentTemplates', 'name')
+            .populate('requiredDocumentTemplates')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -48,7 +48,7 @@ const listMachineTypes = asyncHandler(async (req, res) => {
 
 const getMachineType = asyncHandler(async (req, res) => {
     const item = await MachineType.findById(req.params.id)
-        .populate('requiredDocumentTemplates', 'name')
+        .populate('requiredDocumentTemplates')
         .lean()
     if (!item) {
         throw new AppError('Machine type not found', { statusCode: 404 })
@@ -69,7 +69,7 @@ const createMachineType = asyncHandler(async (req, res) => {
     const item = await MachineType.create(body)
 
     const populated = await MachineType.findById(item._id)
-        .populate('requiredDocumentTemplates', 'name')
+        .populate('requiredDocumentTemplates')
         .lean()
 
     res.status(201).json({
@@ -96,7 +96,7 @@ const updateMachineType = asyncHandler(async (req, res) => {
     }
 
     const populated = await MachineType.findById(item._id)
-        .populate('requiredDocumentTemplates', 'name')
+        .populate('requiredDocumentTemplates')
         .lean()
 
     res.json({

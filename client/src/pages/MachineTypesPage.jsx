@@ -40,6 +40,8 @@ export function MachineTypesPage() {
     const [submitting, setSubmitting] = useState(false)
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [deletingId, setDeletingId] = useState(null)
+    const [viewDocModalOpen, setViewDocModalOpen] = useState(false)
+    const [viewingDoc, setViewingDoc] = useState(null)
 
     const fetchData = async (page = 1) => {
         setLoading(true)
@@ -167,7 +169,12 @@ export function MachineTypesPage() {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex -space-x-2">
                                         {(item.requiredDocumentTemplates || []).map((dt, i) => (
-                                            <div key={i} className="h-7 w-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[10px] text-blue-500 font-bold" title={dt.name}>
+                                            <div
+                                                key={i}
+                                                onClick={() => { setViewingDoc(dt); setViewDocModalOpen(true); }}
+                                                className="h-7 w-7 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-[10px] text-blue-500 font-bold cursor-pointer hover:bg-blue-500/20 transition-all shadow-sm ring-2 ring-card"
+                                                title={dt.name}
+                                            >
                                                 {dt.name?.[0]?.toUpperCase() || 'D'}
                                             </div>
                                         ))}
@@ -287,6 +294,104 @@ export function MachineTypesPage() {
                         <div className="flex justify-end gap-3 pt-2">
                             <Button variant="outline" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
                             <Button variant="destructive" onClick={handleDelete}>Delete Permanently</Button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {viewDocModalOpen && viewingDoc && (
+                <Modal open={viewDocModalOpen} onClose={() => setViewDocModalOpen(false)} title="Document Template Details" className="max-w-2xl">
+                    <div className="p-0 overflow-hidden">
+                        {/* Header Banner */}
+                        <div className="relative p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+                            <div className="flex items-center gap-5 relative z-10">
+                                <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl font-bold shadow-xl border border-white/20">
+                                    {viewingDoc.name?.[0]?.toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-2xl font-bold truncate leading-none">{viewingDoc.name}</h3>
+                                    <div className="flex items-center gap-3 mt-3">
+                                        <div className="px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-[11px] font-bold uppercase tracking-wider border border-white/10">
+                                            {viewingDoc.frequency || 'N/A'}
+                                        </div>
+                                        <div className="h-4 w-px bg-white/20" />
+                                        <div className="text-sm font-medium text-white/80 flex items-center gap-1.5">
+                                            <span className="opacity-60 text-xs uppercase tracking-widest font-bold">Clause:</span>
+                                            {viewingDoc.nablClauseMapping || 'Not Assigned'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-8 bg-card">
+                            {/* Description Section */}
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-muted-foreground uppercase tracking-[0.2em] text-[10px] font-black">
+                                    <div className="h-1 w-4 bg-blue-500 rounded-full" />
+                                    Description
+                                </div>
+                                <div className="p-5 rounded-2xl bg-muted/30 border border-border text-sm leading-relaxed text-foreground shadow-inner">
+                                    {viewingDoc.description || <span className="text-muted-foreground italic">No detailed description has been provided for this template.</span>}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-8">
+                                {/* Formats Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 text-muted-foreground uppercase tracking-[0.2em] text-[10px] font-black">
+                                        <div className="h-1 w-4 bg-blue-500 rounded-full" />
+                                        Allowed Formats
+                                    </div>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {(viewingDoc.allowedFileTypes || []).length > 0 ? (
+                                            viewingDoc.allowedFileTypes.map(type => (
+                                                <div key={type} className="group relative flex items-center gap-2 pr-3 pl-2 py-1.5 rounded-xl bg-background border border-border hover:border-blue-500/30 transition-all shadow-sm">
+                                                    <div className="h-6 w-6 rounded-lg bg-red-100 flex items-center justify-center text-[10px] font-bold text-red-600 uppercase">
+                                                        {type}
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-foreground uppercase">{type}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-xs text-muted-foreground italic">Default formats apply (.pdf)</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Help Content Section */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 text-muted-foreground uppercase tracking-[0.2em] text-[10px] font-black">
+                                        <div className="h-1 w-4 bg-blue-500 rounded-full" />
+                                        Guidance Content
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border",
+                                                viewingDoc.helpContentType === 'NONE'
+                                                    ? "bg-muted text-muted-foreground border-border"
+                                                    : "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                                            )}>
+                                                Type: {viewingDoc.helpContentType || 'NONE'}
+                                            </div>
+                                        </div>
+                                        {viewingDoc.helpContentType !== 'NONE' && viewingDoc.helpContentValue && (
+                                            <div className="text-xs text-foreground p-3 rounded-xl bg-orange-500/5 border border-orange-500/10 italic flex items-center gap-2">
+                                                <div className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                                                {viewingDoc.helpContentValue}
+                                            </div>
+                                        )}
+                                        {viewingDoc.helpContentType === 'NONE' && (
+                                            <div className="text-xs text-muted-foreground italic">No guidance content available.</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end pt-6 border-t border-border">
+                                <Button className="min-w-[120px]" onClick={() => setViewDocModalOpen(false)}>Close Overview</Button>
+                            </div>
                         </div>
                     </div>
                 </Modal>

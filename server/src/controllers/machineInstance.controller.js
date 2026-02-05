@@ -53,7 +53,12 @@ const listMachineInstances = asyncHandler(async (req, res) => {
 
     const [data, total] = await Promise.all([
         MachineInstance.find(filter)
-            .populate('machineType', 'name')
+            .populate({
+                path: 'machineType',
+                populate: {
+                    path: 'requiredDocumentTemplates'
+                }
+            })
             .populate('lab', 'name')
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -79,7 +84,12 @@ const listMachineInstances = asyncHandler(async (req, res) => {
 const getMachineInstance = asyncHandler(async (req, res) => {
     const { role, id: userId } = req.user
     const item = await MachineInstance.findById(req.params.id)
-        .populate('machineType', 'name')
+        .populate({
+            path: 'machineType',
+            populate: {
+                path: 'requiredDocumentTemplates'
+            }
+        })
         .populate('lab', 'name')
         .lean()
 
@@ -121,7 +131,12 @@ const createMachineInstance = asyncHandler(async (req, res) => {
     const item = await MachineInstance.create(body)
 
     const populated = await MachineInstance.findById(item._id)
-        .populate('machineType', 'name')
+        .populate({
+            path: 'machineType',
+            populate: {
+                path: 'requiredDocumentTemplates'
+            }
+        })
         .populate('lab', 'name')
         .lean()
 
@@ -165,7 +180,12 @@ const updateMachineInstance = asyncHandler(async (req, res) => {
     })
 
     const populated = await MachineInstance.findById(item._id)
-        .populate('machineType', 'name')
+        .populate({
+            path: 'machineType',
+            populate: {
+                path: 'requiredDocumentTemplates'
+            }
+        })
         .populate('lab', 'name')
         .lean()
 

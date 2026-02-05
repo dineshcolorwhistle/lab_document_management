@@ -11,7 +11,7 @@ import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Alert } from '../components/ui/Alert'
 import { Modal } from '../components/ui/Modal'
-import { Plus, Pencil, Trash2, Cpu, Calendar, Tag, Info, Building2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Cpu, Calendar, Tag, Info, Building2, Settings2 } from 'lucide-react'
 import { cn } from '../utils/cn'
 import { useAuth } from '../contexts/AuthContext'
 import { useLab } from '../contexts/LabContext'
@@ -26,8 +26,10 @@ export function MachineInstancesPage() {
 
     const [items, setItems] = useState([])
     const [machineTypes, setMachineTypes] = useState([])
-    const [typeDetailsModalOpen, setTypeDetailsModalOpen] = useState(false)
-    const [selectedTypeDetails, setSelectedTypeDetails] = useState(null)
+    const [viewDocModalOpen, setViewDocModalOpen] = useState(false)
+    const [viewingDoc, setViewingDoc] = useState(null)
+    const [viewTypeModalOpen, setViewTypeModalOpen] = useState(false)
+    const [viewingType, setViewingType] = useState(null)
     const [allLabs, setAllLabs] = useState([])
     const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 })
     const [loading, setLoading] = useState(true)
@@ -118,16 +120,10 @@ export function MachineInstancesPage() {
         setModalOpen(true)
     }
 
-    const handleViewTypeDetails = async (typeId) => {
-        if (!typeId) return
-        try {
-            const res = await listMachineTypes() // Or add a getMachineType service
-            const type = res.data.find(t => t.id === typeId)
-            setSelectedTypeDetails(type)
-            setTypeDetailsModalOpen(true)
-        } catch (err) {
-            console.error('Failed to fetch type details', err)
-        }
+    const handleViewTypeDetails = (type) => {
+        if (!type) return
+        setViewingType(type)
+        setViewTypeModalOpen(true)
     }
 
     const handleSubmit = async (e) => {
@@ -220,8 +216,36 @@ export function MachineInstancesPage() {
                         ) : items.map(item => (
                             <tr key={item.id} className="hover:bg-muted/30 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="text-sm font-medium text-foreground">{item.nickname || item.machineType?.name}</div>
-                                    <div className="text-xs text-muted-foreground">{item.nickname ? item.machineType?.name : 'No Nickname'}</div>
+                                    <div className="flex flex-col">
+                                        <div className="text-sm font-bold text-foreground flex items-center gap-2">
+                                            {item.nickname || item.machineType?.name}
+                                            {!item.nickname && (
+                                                <button onClick={() => handleViewTypeDetails(item.machineType)} className="p-1 rounded-md bg-blue-500/5 text-blue-500 hover:bg-blue-500/10 transition-colors">
+                                                    <Info className="h-3 w-3" />
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <button
+                                                onClick={() => handleViewTypeDetails(item.machineType)}
+                                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-all"
+                                            >
+                                                {item.nickname ? item.machineType?.name : 'Standard Type'}
+                                            </button>
+                                            <div className="flex -space-x-1.5 overflow-hidden ml-1">
+                                                {(item.machineType?.requiredDocumentTemplates || []).map((dt, i) => (
+                                                    <div
+                                                        key={i}
+                                                        onClick={(e) => { e.stopPropagation(); setViewingDoc(dt); setViewDocModalOpen(true); }}
+                                                        className="h-5 w-5 rounded-full bg-blue-500/10 border border-card flex items-center justify-center text-[8px] text-blue-600 font-black cursor-pointer hover:scale-110 hover:z-10 transition-all shadow-sm ring-1 ring-blue-500/10"
+                                                        title={dt.name}
+                                                    >
+                                                        {dt.name?.[0]?.toUpperCase() || 'D'}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm text-foreground">{item.model}</div>
@@ -384,60 +408,168 @@ export function MachineInstancesPage() {
                 </Modal>
             )}
 
-            {typeDetailsModalOpen && selectedTypeDetails && (
-                <Modal open={typeDetailsModalOpen} onClose={() => setTypeDetailsModalOpen(false)} title="Machine Type Details" className="max-w-md">
-                    <div className="space-y-4 py-4">
-                        <div>
-                            <label className="text-xs font-medium text-muted-foreground uppercase text-[10px] tracking-wider opacity-60">General Info</label>
-                            <div className="mt-1 grid grid-cols-2 gap-4 bg-muted/20 p-3 rounded-lg border border-border/50">
-                                <div>
-                                    <label className="text-[10px] font-medium text-muted-foreground uppercase block">Name</label>
-                                    <div className="text-sm font-semibold text-foreground">{selectedTypeDetails.name}</div>
+            {/* Professional Machine Type Detail Modal */}
+            {viewTypeModalOpen && viewingType && (
+                <Modal open={viewTypeModalOpen} onClose={() => setViewTypeModalOpen(false)} title="Machine Type Specifications" className="max-w-xl">
+                    <div className="p-0 overflow-hidden">
+                        <div className="p-6 bg-gradient-to-br from-slate-800 to-slate-900 text-white relative">
+                            <div className="flex items-center gap-4 relative z-10">
+                                <div className="h-14 w-14 rounded-2xl bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-2xl">
+                                    <Cpu className="h-8 w-8 text-blue-400" />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-medium text-muted-foreground uppercase block">Category</label>
-                                    <div className="text-sm text-foreground">{selectedTypeDetails.category || 'N/A'}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="text-[10px] font-medium text-muted-foreground uppercase block">Calibration Frequency</label>
-                                <div className="text-sm text-foreground bg-muted/20 p-2 rounded border border-border/50">{selectedTypeDetails.defaultCalibrationFrequency || 'N/A'}</div>
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-medium text-muted-foreground uppercase block">Maintenance Frequency</label>
-                                <div className="text-sm text-foreground bg-muted/20 p-2 rounded border border-border/50">{selectedTypeDetails.defaultMaintenanceFrequency || 'N/A'}</div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="text-[10px] font-medium text-muted-foreground uppercase block mb-1.5">Required Document Templates</label>
-                            <div className="flex flex-wrap gap-2">
-                                {selectedTypeDetails.requiredDocumentTemplates?.length > 0 ? (
-                                    selectedTypeDetails.requiredDocumentTemplates.map(dt => (
-                                        <span key={dt.id || dt._id} className="px-2.5 py-1 bg-blue-500/10 text-blue-500 rounded-lg text-[10px] font-bold border border-blue-500/20">
-                                            {dt.name}
+                                    <h3 className="text-xl font-bold leading-none">{viewingType.name}</h3>
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/20 uppercase tracking-widest leading-normal">
+                                            {viewingType.category || 'Standard'}
                                         </span>
-                                    ))
-                                ) : (
-                                    <span className="text-xs text-muted-foreground italic">No standard templates required</span>
-                                )}
+                                        <span className="text-xs text-white/50 font-medium">System ID: {viewingType.id?.slice(-6)}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        {selectedTypeDetails.notes && (
-                            <div>
-                                <label className="text-[10px] font-medium text-muted-foreground uppercase block mb-1">Type Instructions/Notes</label>
-                                <div className="text-xs text-muted-foreground bg-slate-500/5 p-3 rounded-lg border border-border/50 italic leading-relaxed">
-                                    {selectedTypeDetails.notes}
+                        <div className="p-6 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 rounded-2xl bg-muted/50 border border-border/50">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block mb-2">Calibration</label>
+                                    <div className="flex items-center gap-2">
+                                        <Calendar className="h-4 w-4 text-blue-500" />
+                                        <span className="text-sm font-semibold text-foreground">{viewingType.defaultCalibrationFrequency || 'Not Defined'}</span>
+                                    </div>
+                                </div>
+                                <div className="p-4 rounded-2xl bg-muted/50 border border-border/50">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block mb-2">Maintenance</label>
+                                    <div className="flex items-center gap-2 text-foreground">
+                                        <Settings2 className="h-4 w-4 text-blue-500" />
+                                        <span className="text-sm font-semibold">{viewingType.defaultMaintenanceFrequency || 'Not Defined'}</span>
+                                    </div>
                                 </div>
                             </div>
-                        )}
 
-                        <div className="flex justify-end pt-4 border-t border-border mt-2">
-                            <Button variant="outline" className="h-9 px-4" onClick={() => setTypeDetailsModalOpen(false)}>Close Details</Button>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-1">Compliance Requirements</label>
+                                <div className="flex flex-wrap gap-2 p-4 rounded-2xl bg-blue-500/[0.03] border border-blue-500/10">
+                                    {(viewingType.requiredDocumentTemplates || []).length > 0 ? (
+                                        viewingType.requiredDocumentTemplates.map(dt => (
+                                            <div
+                                                key={dt.id}
+                                                onClick={() => { setViewingDoc(dt); setViewDocModalOpen(true); }}
+                                                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-background border border-border hover:border-blue-500/40 cursor-pointer shadow-sm transition-all"
+                                            >
+                                                <div className="h-5 w-5 rounded-lg bg-blue-500/10 flex items-center justify-center text-[10px] font-bold text-blue-600 uppercase">
+                                                    {dt.name?.[0]}
+                                                </div>
+                                                <span className="text-[11px] font-semibold text-foreground">{dt.name}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="text-xs text-muted-foreground italic w-full text-center py-2">No standard document templates requirement detected.</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {viewingType.notes && (
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider pl-1">Administrative Notes</label>
+                                    <div className="p-4 rounded-2xl bg-muted/30 border border-border text-xs leading-relaxed text-muted-foreground italic">
+                                        {viewingType.notes}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="pt-2">
+                                <Button className="w-full" variant="outline" onClick={() => setViewTypeModalOpen(false)}>Close Specifications</Button>
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Professional Document Detail Modal */}
+            {viewDocModalOpen && viewingDoc && (
+                <Modal open={viewDocModalOpen} onClose={() => setViewDocModalOpen(false)} title="Document Template Details" className="max-w-2xl">
+                    <div className="p-0 overflow-hidden">
+                        <div className="relative p-6 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+                            <div className="flex items-center gap-5 relative z-10">
+                                <div className="h-16 w-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-3xl font-bold shadow-xl border border-white/20">
+                                    {viewingDoc.name?.[0]?.toUpperCase()}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="text-2xl font-bold truncate leading-none">{viewingDoc.name}</h3>
+                                    <div className="flex items-center gap-3 mt-3">
+                                        <div className="px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-sm text-[11px] font-bold uppercase tracking-wider border border-white/10">
+                                            {viewingDoc.frequency || 'N/A'}
+                                        </div>
+                                        <div className="h-4 w-px bg-white/20" />
+                                        <div className="text-sm font-medium text-white/80 flex items-center gap-1.5">
+                                            <span className="opacity-60 text-xs uppercase tracking-widest font-bold">Clause:</span>
+                                            {viewingDoc.nablClauseMapping || 'Not Assigned'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-8 bg-card">
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-muted-foreground uppercase tracking-[0.2em] text-[10px] font-black">
+                                    <div className="h-1 w-4 bg-blue-500 rounded-full" />
+                                    Description
+                                </div>
+                                <div className="p-5 rounded-2xl bg-muted/30 border border-border text-sm leading-relaxed text-foreground shadow-inner">
+                                    {viewingDoc.description || <span className="text-muted-foreground italic">No detailed description has been provided for this template.</span>}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 text-muted-foreground uppercase tracking-[0.2em] text-[10px] font-black">
+                                        <div className="h-1 w-4 bg-blue-500 rounded-full" />
+                                        Allowed Formats
+                                    </div>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {(viewingDoc.allowedFileTypes || []).length > 0 ? (
+                                            viewingDoc.allowedFileTypes.map(type => (
+                                                <div key={type} className="flex items-center gap-2 pr-3 pl-2 py-1.5 rounded-xl bg-background border border-border shadow-sm">
+                                                    <div className="h-6 w-6 rounded-lg bg-red-100 flex items-center justify-center text-[10px] font-bold text-red-600 uppercase">
+                                                        {type}
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-foreground uppercase">{type}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-xs text-muted-foreground italic">Standard formats apply</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2 text-muted-foreground uppercase tracking-[0.2em] text-[10px] font-black">
+                                        <div className="h-1 w-4 bg-blue-500 rounded-full" />
+                                        Guidance Content
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        <div className={cn(
+                                            "px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border self-start",
+                                            viewingDoc.helpContentType === 'NONE'
+                                                ? "bg-muted text-muted-foreground border-border"
+                                                : "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                                        )}>
+                                            Type: {viewingDoc.helpContentType || 'NONE'}
+                                        </div>
+                                        {viewingDoc.helpContentType !== 'NONE' && (
+                                            <div className="text-xs text-foreground p-3 rounded-xl bg-orange-500/5 border border-orange-500/10 italic">
+                                                {viewingDoc.helpContentValue}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end pt-6 border-t border-border">
+                                <Button className="min-w-[120px]" onClick={() => setViewDocModalOpen(false)}>Close Overview</Button>
+                            </div>
                         </div>
                     </div>
                 </Modal>

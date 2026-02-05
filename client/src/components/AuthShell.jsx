@@ -6,7 +6,9 @@ export function AuthShell({ title, subtitle, children, footer }) {
           <div className="hidden lg:block">
             <div className="ldm-card rounded-2xl p-8">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-brand-primary shadow-soft" />
+                <div className="h-10 w-10 rounded-xl bg-brand-primary shadow-soft flex items-center justify-center p-2">
+                  <img src="/cw-logo.svg" alt="CW Logo" className="h-full w-full object-contain" />
+                </div>
                 <div>
                   <div className="text-sm font-semibold tracking-wide text-brand-primary">
                     Lab Document Management
