@@ -10,6 +10,7 @@ import {
   Settings2,
   Cpu,
   Tags,
+  Bell,
 } from 'lucide-react'
 import { ROLES } from '../constants/roles'
 
@@ -33,11 +34,32 @@ export const menuItems = [
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN],
   },
   {
+    id: 'notifications',
+    label: 'Notifications',
+    path: '/notifications',
+    icon: Bell,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN],
+  },
+  {
     id: 'document',
-    label: 'Document',
+    label: 'Documents',
     path: '/documents',
     icon: FileText,
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN],
+    roles: [ROLES.LAB_TECHNICIAN],
+  },
+  {
+    id: 'lab-owner-documents',
+    label: 'Documents',
+    path: '/lab-owner-documents',
+    icon: FileText,
+    roles: [ROLES.LAB_OWNER],
+  },
+  {
+    id: 'admin-documents',
+    label: 'Documents',
+    path: '/admin-documents',
+    icon: FileText,
+    roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
   },
   {
     id: 'reports',
@@ -49,22 +71,27 @@ export const menuItems = [
       [ROLES.LAB_OWNER]: PERMISSIONS.VIEW,
     },
   },
-  {
-    id: 'admin',
-    label: 'Admin',
-    path: '/admin',
-    icon: Shield,
-    roles: [ROLES.SUPER_ADMIN],
-    rolePermissions: {
-      [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
-    },
-  },
+
+  // Labs Group
   {
     id: 'lab-management',
     label: 'Lab Management',
     path: '/lab-management',
     icon: FlaskConical,
     roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
+    category: 'Labs',
+    rolePermissions: {
+      [ROLES.ADMIN]: PERMISSIONS.CRUD,
+      [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
+    },
+  },
+  {
+    id: 'lab-owner',
+    label: 'Lab Owner',
+    path: '/lab-owners',
+    icon: Building2,
+    roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
+    category: 'Labs',
     rolePermissions: {
       [ROLES.ADMIN]: PERMISSIONS.CRUD,
       [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
@@ -76,43 +103,22 @@ export const menuItems = [
     path: '/lab-technicians',
     icon: Wrench,
     roles: [ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.SUPER_ADMIN],
+    category: 'Labs',
     rolePermissions: {
       [ROLES.ADMIN]: PERMISSIONS.CRUD,
       [ROLES.LAB_OWNER]: PERMISSIONS.VIEW,
       [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
     },
   },
-  {
-    id: 'lab-owner',
-    label: 'Lab Owner',
-    path: '/lab-owners',
-    icon: Building2,
-    roles: [ROLES.ADMIN, ROLES.SUPER_ADMIN],
-    rolePermissions: {
-      [ROLES.ADMIN]: PERMISSIONS.CRUD,
-      [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
-    },
-  },
-  {
-    id: 'lab',
-    label: 'Lab',
-    path: '/labs',
-    icon: FlaskConical,
-    roles: [],
-  },
-  {
-    id: 'document-template',
-    label: 'Document Template',
-    path: '/document-templates',
-    icon: FileStack,
-    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
-  },
+
+  // Machine Group
   {
     id: 'machine-type',
     label: 'Machine Type',
     path: '/machine-types',
     icon: Settings2,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN],
+    category: 'Machine',
     rolePermissions: {
       [ROLES.LAB_OWNER]: PERMISSIONS.VIEW,
       [ROLES.LAB_TECHNICIAN]: PERMISSIONS.VIEW,
@@ -120,20 +126,43 @@ export const menuItems = [
   },
   {
     id: 'machine-instance',
-    label: 'Machine Instance Management',
+    label: 'Machine Instance',
     path: '/machine-instance-management',
     icon: Cpu,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.LAB_OWNER, ROLES.LAB_TECHNICIAN],
+    category: 'Machine',
     rolePermissions: {
       [ROLES.LAB_TECHNICIAN]: PERMISSIONS.VIEW,
     },
   },
+
+  // Docs Group
   {
     id: 'document-type',
     label: 'Document Type',
     path: '/document-types',
     icon: Tags,
     roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    category: 'Docs',
+  },
+  {
+    id: 'document-template',
+    label: 'Document Template',
+    path: '/document-templates',
+    icon: FileStack,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+    category: 'Docs',
+  },
+
+  {
+    id: 'admin',
+    label: 'Admin',
+    path: '/admin',
+    icon: Shield,
+    roles: [ROLES.SUPER_ADMIN],
+    rolePermissions: {
+      [ROLES.SUPER_ADMIN]: PERMISSIONS.CRUD,
+    },
   },
 ]
 

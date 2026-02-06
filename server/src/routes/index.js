@@ -7,6 +7,8 @@ const { documentTemplateRouter } = require('./documentTemplate.routes')
 const { machineTypeRouter } = require('./machineType.routes')
 const { machineInstanceRouter } = require('./machineInstance.routes')
 const { documentTypeRouter } = require('./documentType.routes')
+const { documentRouter } = require('./document.routes')
+const notificationRouter = require('./notification.routes')
 
 const router = express.Router()
 
@@ -18,5 +20,8 @@ router.use('/document-templates', documentTemplateRouter)
 router.use('/machine-types', machineTypeRouter)
 router.use('/machine-instances', machineInstanceRouter)
 router.use('/document-types', documentTypeRouter)
+router.use('/documents', documentRouter)
+router.use('/notifications', notificationRouter)
 
 module.exports = router
+

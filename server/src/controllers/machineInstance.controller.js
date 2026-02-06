@@ -47,6 +47,33 @@ const listMachineInstances = asyncHandler(async (req, res) => {
                 })
             }
         }
+    } else if (role === ROLES.LAB_TECHNICIAN) {
+        // Lab technician can only see instances in labs where they are assigned
+        // Query labs where this user is in the labTechnicians array
+        const userLabs = await Lab.find({ labTechnicians: userId }).select('_id')
+        if (!userLabs || userLabs.length === 0) {
+            return res.json({
+                success: true,
+                data: [],
+                pagination: { page, limit, total: 0, totalPages: 0 },
+            })
+        }
+        const labIds = userLabs.map((l) => l._id)
+        filter.lab = { $in: labIds }
+
+        // If they filtered by a specific lab, ensure they are assigned to it
+        if (labId) {
+            if (labIds.map(String).includes(labId)) {
+                filter.lab = labId
+            } else {
+                // If they try to filter by a lab not assigned to them, return empty
+                return res.json({
+                    success: true,
+                    data: [],
+                    pagination: { page, limit, total: 0, totalPages: 0 },
+                })
+            }
+        }
     } else if (role === ROLES.ADMIN || role === ROLES.SUPER_ADMIN) {
         if (labId) filter.lab = labId
     }
@@ -100,6 +127,15 @@ const getMachineInstance = asyncHandler(async (req, res) => {
     // Permission check for Lab Owner
     if (role === ROLES.LAB_OWNER) {
         const lab = await Lab.findOne({ _id: item.lab._id, labOwners: userId })
+        if (!lab) {
+            throw new AppError('Access denied', { statusCode: 403 })
+        }
+    }
+
+    // Permission check for Lab Technician
+    if (role === ROLES.LAB_TECHNICIAN) {
+        // Check if the user is assigned to this lab via Lab.labTechnicians
+        const lab = await Lab.findOne({ _id: item.lab._id, labTechnicians: userId })
         if (!lab) {
             throw new AppError('Access denied', { statusCode: 403 })
         }

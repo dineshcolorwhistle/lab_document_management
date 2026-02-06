@@ -586,7 +586,7 @@ export function LabManagementPage() {
                 type="button"
                 onClick={handleDeleteConfirm}
                 disabled={deleteSubmitting}
-                className="bg-accent-red text-white hover:bg-red-700"
+                className="bg-red-600 text-white hover:bg-red-700"
               >
                 {deleteSubmitting ? 'Deleting…' : 'Delete'}
               </Button>

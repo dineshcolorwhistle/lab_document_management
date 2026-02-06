@@ -13,6 +13,10 @@ import { DocumentTemplatesPage } from '../pages/DocumentTemplatesPage'
 import { MachineTypesPage } from '../pages/MachineTypesPage'
 import { MachineInstancesPage } from '../pages/MachineInstancesPage'
 import { DocumentTypesPage } from '../pages/DocumentTypesPage'
+import DocumentsPage from '../pages/DocumentsPage'
+import NotificationsPage from '../pages/NotificationsPage'
+import LabOwnerDocumentsPage from '../pages/LabOwnerDocumentsPage'
+import AdminDocumentsPage from '../pages/AdminDocumentsPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
 import { RequireRole } from '../components/rbac/RequireRole'
@@ -42,9 +46,9 @@ export function AppRoutes() {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
 
-        {/* Document — all roles */}
+        {/* Notifications — All authenticated users */}
         <Route
-          path="/documents"
+          path="/notifications"
           element={
             <RequireRole
               allowedRoles={[
@@ -54,7 +58,37 @@ export function AppRoutes() {
                 ROLES.LAB_TECHNICIAN,
               ]}
             >
-              <Placeholder title="Document" />
+              <NotificationsPage />
+            </RequireRole>
+          }
+        />
+
+        {/* Document — LAB_TECHNICIAN only */}
+        <Route
+          path="/documents"
+          element={
+            <RequireRole allowedRoles={[ROLES.LAB_TECHNICIAN]}>
+              <DocumentsPage />
+            </RequireRole>
+          }
+        />
+
+        {/* Lab Owner Documents — LAB_OWNER only */}
+        <Route
+          path="/lab-owner-documents"
+          element={
+            <RequireRole allowedRoles={[ROLES.LAB_OWNER]}>
+              <LabOwnerDocumentsPage />
+            </RequireRole>
+          }
+        />
+
+        {/* Admin Documents — ADMIN and SUPER_ADMIN only */}
+        <Route
+          path="/admin-documents"
+          element={
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
+              <AdminDocumentsPage />
             </RequireRole>
           }
         />

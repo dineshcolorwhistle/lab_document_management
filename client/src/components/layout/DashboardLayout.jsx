@@ -7,7 +7,10 @@ import { cn } from '../../utils/cn'
 
 const pageTitles = {
   '/dashboard': 'Dashboard',
-  '/documents': 'Document',
+  '/notifications': 'Notifications',
+  '/documents': 'Documents',
+  '/lab-owner-documents': 'Documents',
+  '/admin-documents': 'Documents',
   '/reports': 'Reports',
   '/admin': 'Admin',
   '/lab-management': 'Lab Management',
@@ -17,6 +20,7 @@ const pageTitles = {
   '/document-templates': 'Document Template',
   '/document-types': 'Document Type',
   '/machine-types': 'Machine Type',
+  '/machine-instance-management': 'Machine Instance',
   '/profile': 'Profile',
   '/settings': 'Account Settings',
 }

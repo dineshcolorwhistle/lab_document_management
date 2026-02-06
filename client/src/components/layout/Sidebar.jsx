@@ -1,8 +1,11 @@
-
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { getMenuItemsForRole } from '../../config/menu'
-import { X, PanelLeftClose, PanelLeft, ChevronDown, Check, Building2 } from 'lucide-react'
+import {
+  X, PanelLeftClose, PanelLeft, ChevronDown, ChevronRight, Check, Building2,
+  FlaskConical, Cpu, FileText, LayoutDashboard
+} from 'lucide-react'
 import { cn } from '../../utils/cn'
 import { useLab } from '../../contexts/LabContext'
 import { ROLES } from '../../constants/roles'
@@ -22,14 +25,75 @@ export function Sidebar({
 }) {
   const { user } = useAuth()
   const location = useLocation()
-  const menuItems = getMenuItemsForRole(user?.role)
+
+  // Memoize menuItems to prevent infinite loop
+  const menuItems = useMemo(() => getMenuItemsForRole(user?.role), [user?.role])
 
   const { selectedLab, selectLab, labs } = useLab()
   const showLabSelector = user?.role === ROLES.LAB_OWNER || user?.role === ROLES.LAB_TECHNICIAN
 
   const baseUrl = API_URL
 
-  const NavLink = ({ item }) => {
+  // State for expanded groups
+  const [expandedGroups, setExpandedGroups] = useState({})
+
+  // Icons for groups
+  const getGroupIcon = (category) => {
+    switch (category) {
+      case 'Labs': return FlaskConical
+      case 'Machine': return Cpu
+      case 'Docs': return FileText
+      default: return LayoutDashboard
+    }
+  }
+
+  // Process menu items into groups
+  const navStructure = useMemo(() => {
+    const structure = []
+    const groups = {}
+
+    menuItems.forEach(item => {
+      if (item.category) {
+        if (!groups[item.category]) {
+          // Create new group
+          const group = {
+            isGroup: true,
+            label: item.category,
+            icon: getGroupIcon(item.category),
+            children: []
+          }
+          groups[item.category] = group
+          structure.push(group)
+        }
+        groups[item.category].children.push(item)
+      } else {
+        // Top level item
+        structure.push(item)
+      }
+    })
+    return structure
+  }, [menuItems])
+
+  // Auto-expand active groups
+  useEffect(() => {
+    navStructure.forEach(item => {
+      if (item.isGroup) {
+        const hasActiveChild = item.children.some(child =>
+          location.pathname === child.path || location.pathname.startsWith(child.path + '/')
+        )
+        if (hasActiveChild) {
+          setExpandedGroups(prev => ({ ...prev, [item.label]: true }))
+        }
+      }
+    })
+  }, [location.pathname, navStructure])
+
+  const toggleGroup = (label) => {
+    if (isCollapsed) return // Don't toggle in collapsed mode
+    setExpandedGroups(prev => ({ ...prev, [label]: !prev[label] }))
+  }
+
+  const NavLink = ({ item, isChild = false }) => {
     const Icon = item.icon
     const isActive =
       location.pathname === item.path || location.pathname.startsWith(item.path + '/')
@@ -41,8 +105,9 @@ export function Sidebar({
         className={cn(
           'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative',
           isActive
-            ? 'bg-blue-600/10 text-blue-100' // Distinct active background
-            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' // Visible inactive text
+            ? 'bg-blue-600/10 text-blue-100'
+            : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100',
+          isChild && 'pl-11' // Indent children
         )}
       >
         {isActive && (
@@ -56,6 +121,92 @@ export function Sidebar({
         />
         <span className={cn('truncate', isCollapsed && 'lg:sr-only')}>{item.label}</span>
       </Link>
+    )
+  }
+
+  const NavGroup = ({ group }) => {
+    const isExpanded = expandedGroups[group.label]
+    const Icon = group.icon
+    const hasActiveChild = group.children.some(child =>
+      location.pathname === child.path || location.pathname.startsWith(child.path + '/')
+    )
+
+    // In collapsed mode, render as Dropdown
+    if (isCollapsed) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={cn(
+                'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 relative w-full',
+                hasActiveChild ? 'text-blue-100' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'
+              )}
+            >
+              <Icon
+                className={cn(
+                  'h-5 w-5 flex-shrink-0 transition-colors',
+                  hasActiveChild ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300'
+                )}
+              />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="start" className="bg-slate-900 border-slate-800 text-slate-200 ml-2">
+            <div className="px-2 py-1.5 text-xs font-semibold uppercase text-slate-500">
+              {group.label}
+            </div>
+            {group.children.map(child => (
+              <DropdownMenuItem key={child.id} asChild>
+                <Link
+                  to={child.path}
+                  className={cn(
+                    "flex items-center gap-2 cursor-pointer focus:bg-slate-800 focus:text-white",
+                    (location.pathname === child.path) && "text-blue-400"
+                  )}
+                >
+                  <child.icon className="h-4 w-4" />
+                  <span>{child.label}</span>
+                </Link>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    }
+
+    // Normal Expanded Mode
+    return (
+      <div>
+        <button
+          onClick={() => toggleGroup(group.label)}
+          className={cn(
+            'group flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-slate-100',
+            hasActiveChild && !isExpanded && 'text-blue-100'
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <Icon className={cn(
+              "h-5 w-5 flex-shrink-0 transition-colors",
+              hasActiveChild ? 'text-blue-400' : 'text-slate-500'
+            )} />
+            <span className="truncate">{group.label}</span>
+          </div>
+          <ChevronRight
+            className={cn(
+              "h-4 w-4 transition-transform duration-200",
+              isExpanded && "rotate-90"
+            )}
+          />
+        </button>
+
+        {/* Children */}
+        {isExpanded && (
+          <div className="mt-1 space-y-1">
+            {group.children.map(child => (
+              <NavLink key={child.id} item={child} isChild={true} />
+            ))}
+          </div>
+        )}
+      </div>
     )
   }
 
@@ -173,8 +324,12 @@ export function Sidebar({
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 custom-scrollbar">
           <div className="space-y-1">
-            {menuItems.map((item) => (
-              <NavLink key={item.id} item={item} />
+            {navStructure.map((item) => (
+              item.isGroup ? (
+                <NavGroup key={item.label} group={item} />
+              ) : (
+                <NavLink key={item.id} item={item} />
+              )
             ))}
             {menuItems.length === 0 && (
               <div className="px-3 py-4 text-center text-sm text-slate-500">

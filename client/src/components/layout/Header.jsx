@@ -6,6 +6,7 @@ import { clearToken } from '../../services/token'
 import { cn } from '../../utils/cn'
 
 import { ThemeToggle } from '../ui/ThemeToggle'
+import NotificationBell from '../NotificationBell'
 import { API_URL } from '../../utils/env'
 
 export function Header({ title, breadcrumbs, onMenuClick }) {
@@ -98,6 +99,7 @@ export function Header({ title, breadcrumbs, onMenuClick }) {
 
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <NotificationBell />
           {/* Right: user menu */}
           <div className="relative shrink-0" ref={dropdownRef}>
             <button
