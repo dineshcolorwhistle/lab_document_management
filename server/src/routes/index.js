@@ -6,6 +6,7 @@ const { labRouter } = require('./lab.routes')
 const { documentTemplateRouter } = require('./documentTemplate.routes')
 const { machineTypeRouter } = require('./machineType.routes')
 const { machineInstanceRouter } = require('./machineInstance.routes')
+const { documentTypeRouter } = require('./documentType.routes')
 
 const router = express.Router()
 
@@ -16,5 +17,6 @@ router.use('/labs', labRouter)
 router.use('/document-templates', documentTemplateRouter)
 router.use('/machine-types', machineTypeRouter)
 router.use('/machine-instances', machineInstanceRouter)
+router.use('/document-types', documentTypeRouter)
 
 module.exports = router

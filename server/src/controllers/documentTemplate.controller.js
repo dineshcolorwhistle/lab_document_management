@@ -11,6 +11,7 @@ const documentTemplateSchema = z.object({
     nablClauseMapping: z.string().trim().optional().default(''),
     helpContentType: z.enum(['TEXT', 'VIDEO', 'PDF', 'NONE']).optional().default('NONE'),
     helpContentValue: z.string().trim().optional().default(''),
+    documentType: z.string().min(1, 'Document type is required'),
     status: z.enum(['ACTIVE', 'INACTIVE']).optional().default('ACTIVE'),
 })
 
@@ -25,6 +26,7 @@ const listDocumentTemplates = asyncHandler(async (req, res) => {
 
     const [data, total] = await Promise.all([
         DocumentTemplate.find(filter)
+            .populate('documentType', 'name code')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -47,7 +49,7 @@ const listDocumentTemplates = asyncHandler(async (req, res) => {
 })
 
 const getDocumentTemplate = asyncHandler(async (req, res) => {
-    const item = await DocumentTemplate.findById(req.params.id).lean()
+    const item = await DocumentTemplate.findById(req.params.id).populate('documentType', 'name code').lean()
     if (!item) {
         throw new AppError('Document template not found', { statusCode: 404 })
     }

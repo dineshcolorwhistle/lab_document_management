@@ -5,6 +5,7 @@ import {
     updateDocumentTemplate,
     deleteDocumentTemplate,
 } from '../services/documentTemplate'
+import documentTypeService from '../services/documentType'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
 import { Alert } from '../components/ui/Alert'
@@ -33,6 +34,7 @@ export function DocumentTemplatesPage() {
     const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [docTypes, setDocTypes] = useState([])
 
     const [modalOpen, setModalOpen] = useState(false)
     const [editingTemplate, setEditingTemplate] = useState(null)
@@ -44,6 +46,7 @@ export function DocumentTemplatesPage() {
         nablClauseMapping: '',
         helpContentType: 'NONE',
         helpContentValue: '',
+        documentType: '',
         status: 'ACTIVE',
     })
 
@@ -54,9 +57,13 @@ export function DocumentTemplatesPage() {
     const fetchTemplates = async (page = 1) => {
         setLoading(true)
         try {
-            const res = await listDocumentTemplates({ page })
+            const [res, typeRes] = await Promise.all([
+                listDocumentTemplates({ page }),
+                documentTypeService.getAll({ limit: 100, status: 'ACTIVE' })
+            ])
             setTemplates(res.data)
             setPagination(res.pagination)
+            setDocTypes(typeRes.data)
         } catch (err) {
             setError(err?.response?.data?.message || 'Failed to fetch templates')
         } finally {
@@ -79,6 +86,7 @@ export function DocumentTemplatesPage() {
                 nablClauseMapping: template.nablClauseMapping || '',
                 helpContentType: template.helpContentType || 'NONE',
                 helpContentValue: template.helpContentValue || '',
+                documentType: template.documentType?.id || template.documentType?._id || template.documentType || '',
                 status: template.status || 'ACTIVE',
             })
         } else {
@@ -91,6 +99,7 @@ export function DocumentTemplatesPage() {
                 nablClauseMapping: '',
                 helpContentType: 'NONE',
                 helpContentValue: '',
+                documentType: '',
                 status: 'ACTIVE',
             })
         }
@@ -156,6 +165,7 @@ export function DocumentTemplatesPage() {
                     <thead className="bg-muted/50">
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Frequency</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase text-right">Actions</th>
@@ -167,6 +177,11 @@ export function DocumentTemplatesPage() {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm font-medium text-foreground">{item.name}</div>
                                     <div className="text-xs text-muted-foreground truncate max-w-[200px]">{item.description}</div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                                    <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[10px] font-bold uppercase border border-primary/20">
+                                        {item.documentType?.name || 'Unassigned'}
+                                    </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                     {FREQUENCIES.find(f => f.value === item.frequency)?.label}
@@ -230,6 +245,18 @@ export function DocumentTemplatesPage() {
                                     value={form.frequency} onChange={e => setForm({ ...form, frequency: e.target.value })}
                                 >
                                     {FREQUENCIES.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium mb-1 block">Document Type</label>
+                                <select
+                                    disabled={!canEdit}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                                    required
+                                    value={form.documentType} onChange={e => setForm({ ...form, documentType: e.target.value })}
+                                >
+                                    <option value="">Select Document Type</option>
+                                    {docTypes.map(type => <option key={type.id} value={type.id}>{type.name}</option>)}
                                 </select>
                             </div>
                             <div>

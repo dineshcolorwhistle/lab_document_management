@@ -120,9 +120,17 @@ export function MachineInstancesPage() {
         setModalOpen(true)
     }
 
-    const handleViewTypeDetails = (type) => {
-        if (!type) return
-        setViewingType(type)
+    const handleViewTypeDetails = (typeOrId) => {
+        if (!typeOrId) return
+
+        // If it's an ID (from form select), find the full object from the list
+        const fullType = typeof typeOrId === 'string'
+            ? machineTypes.find(t => t.id === typeOrId || t._id === typeOrId)
+            : typeOrId
+
+        if (!fullType) return
+
+        setViewingType(fullType)
         setViewTypeModalOpen(true)
     }
 
@@ -423,7 +431,7 @@ export function MachineInstancesPage() {
                                         <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/20 uppercase tracking-widest leading-normal">
                                             {viewingType.category || 'Standard'}
                                         </span>
-                                        <span className="text-xs text-white/50 font-medium">System ID: {viewingType.id?.slice(-6)}</span>
+                                        <span className="text-xs text-white/50 font-medium">System ID: {(viewingType.id || viewingType._id || '').slice(-6).toUpperCase()}</span>
                                     </div>
                                 </div>
                             </div>
@@ -435,14 +443,18 @@ export function MachineInstancesPage() {
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block mb-2">Calibration</label>
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-4 w-4 text-blue-500" />
-                                        <span className="text-sm font-semibold text-foreground">{viewingType.defaultCalibrationFrequency || 'Not Defined'}</span>
+                                        <span className="text-sm font-semibold text-foreground">
+                                            {typeof viewingType.defaultCalibrationFrequency === 'number' ? `${viewingType.defaultCalibrationFrequency} Days` : (viewingType.defaultCalibrationFrequency || 'Not Defined')}
+                                        </span>
                                     </div>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-muted/50 border border-border/50">
                                     <label className="text-[10px] font-black text-muted-foreground uppercase tracking-wider block mb-2">Maintenance</label>
                                     <div className="flex items-center gap-2 text-foreground">
                                         <Settings2 className="h-4 w-4 text-blue-500" />
-                                        <span className="text-sm font-semibold">{viewingType.defaultMaintenanceFrequency || 'Not Defined'}</span>
+                                        <span className="text-sm font-semibold">
+                                            {typeof viewingType.defaultMaintenanceFrequency === 'number' ? `${viewingType.defaultMaintenanceFrequency} Days` : (viewingType.defaultMaintenanceFrequency || 'Not Defined')}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

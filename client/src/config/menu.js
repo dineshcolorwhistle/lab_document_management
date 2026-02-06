@@ -9,6 +9,7 @@ import {
   FileStack,
   Settings2,
   Cpu,
+  Tags,
 } from 'lucide-react'
 import { ROLES } from '../constants/roles'
 
@@ -126,6 +127,13 @@ export const menuItems = [
     rolePermissions: {
       [ROLES.LAB_TECHNICIAN]: PERMISSIONS.VIEW,
     },
+  },
+  {
+    id: 'document-type',
+    label: 'Document Type',
+    path: '/document-types',
+    icon: Tags,
+    roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
   },
 ]
 

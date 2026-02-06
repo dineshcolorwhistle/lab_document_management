@@ -15,6 +15,7 @@ const pageTitles = {
   '/lab-owners': 'Lab Owner',
   '/labs': 'Lab',
   '/document-templates': 'Document Template',
+  '/document-types': 'Document Type',
   '/machine-types': 'Machine Type',
   '/profile': 'Profile',
   '/settings': 'Account Settings',

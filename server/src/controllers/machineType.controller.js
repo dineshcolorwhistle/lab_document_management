@@ -6,8 +6,8 @@ const MachineType = require('../models/MachineType')
 const machineTypeSchema = z.object({
     name: z.string().trim().min(1, 'Machine type name is required'),
     category: z.string().trim().optional().default(''),
-    defaultCalibrationFrequency: z.string().trim().optional().default(''),
-    defaultMaintenanceFrequency: z.string().trim().optional().default(''),
+    defaultCalibrationFrequency: z.coerce.number().min(0).max(365).optional().default(0),
+    defaultMaintenanceFrequency: z.coerce.number().min(0).max(365).optional().default(0),
     status: z.enum(['ACTIVE', 'INACTIVE']).optional().default('ACTIVE'),
     notes: z.string().trim().optional().default(''),
     requiredDocumentTemplates: z.array(z.string()).optional().default([]),

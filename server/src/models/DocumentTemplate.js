@@ -21,6 +21,11 @@ const documentTemplateSchema = new mongoose.Schema(
             default: 'NONE',
         },
         helpContentValue: { type: String, trim: true, default: '' },
+        documentType: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'DocumentType',
+            required: true,
+        },
         status: { type: String, enum: ['ACTIVE', 'INACTIVE'], default: 'ACTIVE' },
     },
     { timestamps: true },

@@ -12,6 +12,7 @@ import { ProfilePage } from '../pages/ProfilePage'
 import { DocumentTemplatesPage } from '../pages/DocumentTemplatesPage'
 import { MachineTypesPage } from '../pages/MachineTypesPage'
 import { MachineInstancesPage } from '../pages/MachineInstancesPage'
+import { DocumentTypesPage } from '../pages/DocumentTypesPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
 import { RequireRole } from '../components/rbac/RequireRole'
@@ -116,6 +117,14 @@ export function AppRoutes() {
           element={
             <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
               <DocumentTemplatesPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/document-types"
+          element={
+            <RequireRole allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
+              <DocumentTypesPage />
             </RequireRole>
           }
         />

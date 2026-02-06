@@ -30,8 +30,8 @@ export function MachineTypesPage() {
     const [form, setForm] = useState({
         name: '',
         category: '',
-        defaultCalibrationFrequency: '',
-        defaultMaintenanceFrequency: '',
+        defaultCalibrationFrequency: 0,
+        defaultMaintenanceFrequency: 0,
         status: 'ACTIVE',
         notes: '',
         requiredDocumentTemplates: [],
@@ -70,8 +70,8 @@ export function MachineTypesPage() {
             setForm({
                 name: item.name,
                 category: item.category || '',
-                defaultCalibrationFrequency: item.defaultCalibrationFrequency || '',
-                defaultMaintenanceFrequency: item.defaultMaintenanceFrequency || '',
+                defaultCalibrationFrequency: item.defaultCalibrationFrequency || 0,
+                defaultMaintenanceFrequency: item.defaultMaintenanceFrequency || 0,
                 status: item.status || 'ACTIVE',
                 notes: item.notes || '',
                 requiredDocumentTemplates: (item.requiredDocumentTemplates || []).map(dt => typeof dt === 'string' ? dt : dt.id || dt._id),
@@ -81,8 +81,8 @@ export function MachineTypesPage() {
             setForm({
                 name: '',
                 category: '',
-                defaultCalibrationFrequency: '',
-                defaultMaintenanceFrequency: '',
+                defaultCalibrationFrequency: 0,
+                defaultMaintenanceFrequency: 0,
                 status: 'ACTIVE',
                 notes: '',
                 requiredDocumentTemplates: [],
@@ -151,13 +151,23 @@ export function MachineTypesPage() {
                         <tr>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Machine Type</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Calibration</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Maintenance</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Required Docs</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Status</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {items.map(item => (
+                        {loading ? (
+                            <tr>
+                                <td colSpan="7" className="px-6 py-4 text-center text-sm text-muted-foreground">Loading...</td>
+                            </tr>
+                        ) : items.length === 0 ? (
+                            <tr>
+                                <td colSpan="7" className="px-6 py-4 text-center text-sm text-muted-foreground">No machine types found.</td>
+                            </tr>
+                        ) : items.map(item => (
                             <tr key={item.id} className="hover:bg-muted/30 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="text-sm font-medium text-foreground">{item.name}</div>
@@ -165,6 +175,16 @@ export function MachineTypesPage() {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                     {item.category || '—'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full inline-block">
+                                        {item.defaultCalibrationFrequency} Days
+                                    </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full inline-block">
+                                        {item.defaultMaintenanceFrequency} Days
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex -space-x-2">
@@ -220,12 +240,46 @@ export function MachineTypesPage() {
                                 <Input disabled={!canEdit} value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} placeholder="e.g. Diagnostic, Research" />
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1 block">Calibration Frequency</label>
-                                <Input disabled={!canEdit} value={form.defaultCalibrationFrequency} onChange={e => setForm({ ...form, defaultCalibrationFrequency: e.target.value })} placeholder="e.g. 6 Months" />
+                                <label className="text-sm font-medium mb-1 block">Calibration Frequency (Days)</label>
+                                <div className="relative">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        max="365"
+                                        disabled={!canEdit}
+                                        value={form.defaultCalibrationFrequency}
+                                        onChange={e => setForm({ ...form, defaultCalibrationFrequency: parseInt(e.target.value) || 0 })}
+                                        className="pr-12"
+                                        placeholder="0"
+                                    />
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-xs text-muted-foreground font-medium">
+                                        days
+                                    </div>
+                                </div>
+                                {form.defaultCalibrationFrequency > 0 && (
+                                    <p className="text-[10px] text-primary mt-1 font-medium">Will repeat every {form.defaultCalibrationFrequency} days</p>
+                                )}
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-1 block">Maintenance Frequency</label>
-                                <Input disabled={!canEdit} value={form.defaultMaintenanceFrequency} onChange={e => setForm({ ...form, defaultMaintenanceFrequency: e.target.value })} placeholder="e.g. 3 Months" />
+                                <label className="text-sm font-medium mb-1 block">Maintenance Frequency (Days)</label>
+                                <div className="relative">
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        max="365"
+                                        disabled={!canEdit}
+                                        value={form.defaultMaintenanceFrequency}
+                                        onChange={e => setForm({ ...form, defaultMaintenanceFrequency: parseInt(e.target.value) || 0 })}
+                                        className="pr-12"
+                                        placeholder="0"
+                                    />
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-xs text-muted-foreground font-medium">
+                                        days
+                                    </div>
+                                </div>
+                                {form.defaultMaintenanceFrequency > 0 && (
+                                    <p className="text-[10px] text-primary mt-1 font-medium">Will repeat every {form.defaultMaintenanceFrequency} days</p>
+                                )}
                             </div>
                             <div>
                                 <label className="text-sm font-medium mb-1 block">Status</label>
