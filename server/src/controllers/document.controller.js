@@ -326,8 +326,20 @@ exports.deleteDocument = async (req, res, next) => {
         }
 
         // Delete file from filesystem
-        if (fs.existsSync(document.filePath)) {
-            fs.unlinkSync(document.filePath)
+        let filePath = document.filePath
+
+        // Migration Fix: Handle path mismatch
+        if (!fs.existsSync(filePath)) {
+            const fileName = filePath.replace(/^.*[\\\/]/, '')
+            const uploadsDir = path.join(__dirname, '../../uploads/documents')
+            const potentialPath = path.join(uploadsDir, fileName)
+            if (fs.existsSync(potentialPath)) {
+                filePath = potentialPath
+            }
+        }
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath)
         }
 
         await Document.findByIdAndDelete(id)
@@ -381,8 +393,22 @@ exports.downloadDocument = async (req, res, next) => {
             })
         }
 
+        let filePath = document.filePath
+
+        // Migration Fix: Handle path mismatch (e.g. Windows path on Linux)
+        if (!fs.existsSync(filePath)) {
+            // Extract filename from the stored path (handles both \ and / separators)
+            const fileName = filePath.replace(/^.*[\\\/]/, '')
+            const uploadsDir = path.join(__dirname, '../../uploads/documents')
+            const potentialPath = path.join(uploadsDir, fileName)
+
+            if (fs.existsSync(potentialPath)) {
+                filePath = potentialPath
+            }
+        }
+
         // Check if file exists
-        if (!fs.existsSync(document.filePath)) {
+        if (!fs.existsSync(filePath)) {
             return res.status(404).json({
                 success: false,
                 message: 'File not found on server',
@@ -395,7 +421,7 @@ exports.downloadDocument = async (req, res, next) => {
         res.setHeader('Content-Disposition', `inline; filename="${fileName}"`)
 
         // Stream the file
-        const fileStream = fs.createReadStream(document.filePath)
+        const fileStream = fs.createReadStream(filePath)
         fileStream.pipe(res)
     } catch (error) {
         next(error)
