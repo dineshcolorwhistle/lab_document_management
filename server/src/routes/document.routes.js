@@ -17,6 +17,7 @@ const {
     getAllDocuments,
     reviewDocument,
     getDocumentVersionHistory,
+    createDocumentVersion,
 } = require('../controllers/document.controller')
 
 const router = express.Router()
@@ -87,6 +88,9 @@ router.get('/:id/download', downloadDocument)
 
 // Get version history of a document
 router.get('/:id/versions', getDocumentVersionHistory)
+
+// Create a new version of a document (Lab Technician only, others can be added if needed)
+router.post('/:id/versions', authorizeRoles(ROLES.LAB_TECHNICIAN), upload.single('file'), createDocumentVersion)
 
 // Get a single document by ID
 router.get('/:id', getDocumentById)

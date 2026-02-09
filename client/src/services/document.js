@@ -67,6 +67,16 @@ export const documentService = {
         return response
     },
 
+    // Upload a new version of a document
+    uploadDocumentVersion: async (id, formData) => {
+        const response = await api.post(`/documents/${id}/versions`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
+        return response.data
+    },
+
     // Delete a document
     deleteDocument: async (id) => {
         const response = await api.delete(`/documents/${id}`)

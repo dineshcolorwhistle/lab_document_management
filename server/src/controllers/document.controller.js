@@ -228,7 +228,7 @@ exports.getMyDocuments = async (req, res, next) => {
         const userId = req.user.id
         const { page = 1, limit = 10, machineInstanceId, documentTemplateId } = req.query
 
-        const query = { uploadedBy: userId }
+        const query = { uploadedBy: userId, isLatestVersion: true }
 
         if (machineInstanceId) {
             query.machineInstance = machineInstanceId
@@ -323,6 +323,25 @@ exports.deleteDocument = async (req, res, next) => {
                 success: false,
                 message: 'You do not have access to delete this document',
             })
+        }
+
+        // Promote previous version if we are deleting the latest version
+        if (document.isLatestVersion) {
+            const rootParentId = document.parentDocument || document._id
+
+            // Find the new latest version (excluding the one being deleted)
+            const newLatest = await Document.findOne({
+                $or: [
+                    { _id: rootParentId },
+                    { parentDocument: rootParentId },
+                ],
+                _id: { $ne: document._id },
+            }).sort({ version: -1 })
+
+            if (newLatest) {
+                newLatest.isLatestVersion = true
+                await newLatest.save()
+            }
         }
 
         // Delete file from filesystem
@@ -679,12 +698,14 @@ exports.getDocumentVersionHistory = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Document not found' })
         }
 
-        // Find all versions (documents with same parentDocument or this document as parent)
+        // Determine root parent ID
+        const rootParentId = document.parentDocument || document._id
+
+        // Find all versions (the root parent itself OR any document pointing to it)
         const versions = await Document.find({
             $or: [
-                { _id: id },
-                { parentDocument: id },
-                { parentDocument: document.parentDocument },
+                { _id: rootParentId },
+                { parentDocument: rootParentId }
             ],
         })
             .populate('uploadedBy', 'name email')
@@ -700,3 +721,176 @@ exports.getDocumentVersionHistory = async (req, res, next) => {
     }
 }
 
+
+/**
+ * Create a new version of an existing document
+ */
+exports.createDocumentVersion = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const { name, applicableDate, comments } = req.body
+        const userId = req.user.id
+
+        // Validate required fields
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded',
+            })
+        }
+
+        // Find the parent document
+        const parentDoc = await Document.findById(id)
+            .populate('lab')
+            .populate('machineInstance')
+            .populate('documentTemplate')
+
+        if (!parentDoc) {
+            // Clean up uploaded file
+            if (req.file && req.file.path) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error('Error deleting file:', err)
+                })
+            }
+            return res.status(404).json({ success: false, message: 'Parent document not found' })
+        }
+
+        // Verify access - similar to uploadDocument
+        const lab = await Lab.findOne({ _id: parentDoc.lab._id, labTechnicians: userId }).populate('labOwners', 'name email')
+
+        if (!lab) {
+            // Clean up uploaded file
+            if (req.file && req.file.path) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error('Error deleting file:', err)
+                })
+            }
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have access to this document\'s lab',
+            })
+        }
+
+        // Determine the root parent ID
+        // If the document we are versioning is already a version (has a parent), use that parent.
+        // If it doesn't have a parent, then IT IS the root parent.
+        const rootParentId = parentDoc.parentDocument || parentDoc._id
+
+        // Find the current latest version to determine new version number
+        const latestDoc = await Document.findOne({
+            $or: [{ _id: rootParentId }, { parentDocument: rootParentId }]
+        }).sort({ version: -1 })
+
+        const newVersionNumber = (latestDoc ? latestDoc.version : 1) + 1
+
+        // Create new document version
+        const newDoc = await Document.create({
+            name: name || parentDoc.name,
+            filePath: req.file.path,
+            fileType: req.file.mimetype,
+            lab: parentDoc.lab._id,
+            machineInstance: parentDoc.machineInstance._id,
+            documentTemplate: parentDoc.documentTemplate._id,
+            uploadedBy: userId,
+            applicableDate: applicableDate || null,
+            comments: comments || '',
+            status: 'PENDING',
+            version: newVersionNumber,
+            parentDocument: rootParentId,
+            isLatestVersion: true,
+            metadata: {
+                originalName: req.file.originalname,
+                size: req.file.size,
+                uploadDate: new Date(),
+            },
+        })
+
+        // Update all other versions to NOT be the latest
+        await Document.updateMany(
+            {
+                $or: [{ _id: rootParentId }, { parentDocument: rootParentId }],
+                _id: { $ne: newDoc._id }
+            },
+            { isLatestVersion: false }
+        )
+
+        // Populate for response and notifications
+        const populatedDocument = await Document.findById(newDoc._id)
+            .populate('lab', 'name')
+            .populate('machineInstance', 'nickname model serialNumber')
+            .populate('documentTemplate', 'name description')
+            .populate('uploadedBy', 'name email')
+
+        // Send notifications (Reuse logic from uploadDocument)
+        const User = require('../models/User')
+        const { createNotification } = require('./notification.controller')
+
+        // Get uploader details
+        const uploader = await User.findById(userId).select('name email')
+
+        // Notify Lab Owners
+        const labOwners = lab.labOwners || []
+        for (const owner of labOwners) {
+            await createNotification({
+                recipient: owner._id,
+                type: 'DOCUMENT_UPLOADED',
+                title: 'New Document Version Uploaded',
+                message: `${uploader.name} uploaded version ${newVersionNumber} of document: ${newDoc.name}`,
+                relatedDocument: newDoc._id,
+                relatedUser: userId,
+                metadata: {
+                    emailData: {
+                        recipient: owner,
+                        document: populatedDocument,
+                        uploader,
+                        lab: populatedDocument.lab,
+                        machineInstance: populatedDocument.machineInstance,
+                        isVersion: true,
+                        version: newVersionNumber
+                    },
+                },
+                sendEmail: true,
+            })
+        }
+
+        // Notify Admins
+        const admins = await User.find({ role: { $in: ['ADMIN', 'SUPER_ADMIN'] }, status: 'ACTIVE' }).select('name email')
+        for (const admin of admins) {
+            await createNotification({
+                recipient: admin._id,
+                type: 'DOCUMENT_UPLOADED',
+                title: 'New Document Version Uploaded',
+                message: `${uploader.name} uploaded version ${newVersionNumber} of document: ${newDoc.name} in ${lab.name}`,
+                relatedDocument: newDoc._id,
+                relatedUser: userId,
+                metadata: {
+                    emailData: {
+                        recipient: admin,
+                        document: populatedDocument,
+                        uploader,
+                        lab: populatedDocument.lab,
+                        machineInstance: populatedDocument.machineInstance,
+                        isVersion: true,
+                        version: newVersionNumber
+                    },
+                },
+                sendEmail: true,
+            })
+        }
+
+        res.status(201).json({
+            success: true,
+            message: 'New version uploaded successfully',
+            data: populatedDocument,
+        })
+
+    } catch (error) {
+        // Clean up uploaded file
+        if (req.file && req.file.path) {
+            fs.unlink(req.file.path, (err) => {
+                if (err) console.error('Error deleting file:', err)
+            })
+        }
+        next(error)
+    }
+}

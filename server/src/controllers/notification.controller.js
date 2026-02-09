@@ -176,3 +176,33 @@ exports.deleteNotification = async (req, res, next) => {
         next(error)
     }
 }
+
+/**
+ * Delete multiple notifications
+ */
+exports.deleteNotifications = async (req, res, next) => {
+    try {
+        const { ids } = req.body
+        const userId = req.user.id
+
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No notification IDs provided',
+            })
+        }
+
+        const result = await Notification.deleteMany({
+            _id: { $in: ids },
+            recipient: userId,
+        })
+
+        res.json({
+            success: true,
+            message: `${result.deletedCount} notifications deleted successfully`,
+            data: { deletedCount: result.deletedCount },
+        })
+    } catch (error) {
+        next(error)
+    }
+}

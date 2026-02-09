@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { documentService } from '../services/document'
-import { FileText, Upload, Trash2, X, Check, AlertCircle, Download, MessageSquare } from 'lucide-react'
+import { FileText, Upload, Trash2, X, Check, AlertCircle, Download, MessageSquare, FileUp, History } from 'lucide-react'
 
 export default function DocumentsPage() {
     const [machineInstances, setMachineInstances] = useState([])
@@ -13,6 +13,10 @@ export default function DocumentsPage() {
     const [applicableDate, setApplicableDate] = useState('')
     const [comments, setComments] = useState('')
     const [showUploadModal, setShowUploadModal] = useState(false)
+    const [showVersionModal, setShowVersionModal] = useState(false)
+    const [showHistoryModal, setShowHistoryModal] = useState(false)
+    const [selectedDocumentForVersion, setSelectedDocumentForVersion] = useState(null)
+    const [versions, setVersions] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -208,6 +212,73 @@ export default function DocumentsPage() {
         })
     }
 
+    const handleOpenVersionModal = (doc) => {
+        setSelectedDocumentForVersion(doc)
+        setDocumentName(doc.name)
+        setApplicableDate(doc.applicableDate ? new Date(doc.applicableDate).toISOString().split('T')[0] : '')
+        setComments('')
+        setSelectedFile(null)
+        setError('')
+        setSuccess('')
+        setShowVersionModal(true)
+    }
+
+    const handleUploadVersion = async (e) => {
+        e.preventDefault()
+        setError('')
+        setSuccess('')
+
+        if (!selectedFile || !documentName) {
+            setError('Please select a file and document name')
+            return
+        }
+
+        try {
+            setLoading(true)
+            const formData = new FormData()
+            formData.append('file', selectedFile)
+            formData.append('name', documentName)
+            if (applicableDate) {
+                formData.append('applicableDate', applicableDate)
+            }
+            if (comments) {
+                formData.append('comments', comments)
+            }
+
+            await documentService.uploadDocumentVersion(selectedDocumentForVersion._id, formData)
+            setSuccess('New version uploaded successfully!')
+
+            // Reset form
+            setSelectedDocumentForVersion(null)
+            setSelectedFile(null)
+            setDocumentName('')
+            setApplicableDate('')
+            setComments('')
+            setShowVersionModal(false)
+
+            // Refresh documents list
+            fetchDocuments()
+        } catch (err) {
+            console.error('Error uploading version:', err)
+            setError(err.response?.data?.message || 'Failed to upload version')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleViewHistory = async (doc) => {
+        try {
+            // setLoading(true) // Don't block UI with global loading, maybe local loading state?
+            const response = await documentService.getDocumentVersionHistory(doc._id)
+            setVersions(response.data || [])
+            setShowHistoryModal(true)
+            setSelectedDocumentForVersion(doc) // Reuse this for title
+        } catch (err) {
+            console.error('Error fetching version history:', err)
+            setError('Failed to load version history')
+        }
+    }
+
     const formatFileSize = (bytes) => {
         if (bytes < 1024) return bytes + ' B'
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB'
@@ -304,7 +375,10 @@ export default function DocumentsPage() {
                                                 <div className="flex items-start gap-2">
                                                     <FileText className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                                                     <div className="min-w-0 flex-1">
-                                                        <div className="font-medium text-foreground">{doc.name}</div>
+                                                        <div className="font-medium text-foreground">
+                                                            {doc.name}
+                                                            <span className="text-xs text-muted-foreground ml-2 border border-border px-1.5 py-0.5 rounded-full">v{doc.version}</span>
+                                                        </div>
                                                         {doc.status === 'REJECTED' && doc.feedback && (
                                                             <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
                                                                 <div className="text-xs font-semibold text-red-800 mb-1">
@@ -353,6 +427,20 @@ export default function DocumentsPage() {
                                                         title="Download"
                                                     >
                                                         <Download className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleViewHistory(doc)}
+                                                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                                        title="View Version History"
+                                                    >
+                                                        <History className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleOpenVersionModal(doc)}
+                                                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                                        title="Upload New Version"
+                                                    >
+                                                        <FileUp className="h-4 w-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteDocument(doc._id)}
@@ -543,6 +631,184 @@ export default function DocumentsPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Version Upload Modal */}
+            {showVersionModal && selectedDocumentForVersion && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowVersionModal(false)}>
+                    <div className="bg-card rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-border">
+                            <div>
+                                <h2 className="text-2xl font-bold text-foreground">Upload New Version</h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Updating: {selectedDocumentForVersion.name} (Version {selectedDocumentForVersion.version})
+                                </p>
+                            </div>
+                            <button onClick={() => setShowVersionModal(false)} className="p-2 hover:bg-muted rounded-lg transition-colors">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleUploadVersion}>
+                            <div className="p-6 space-y-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        Document Name <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        value={documentName}
+                                        onChange={(e) => setDocumentName(e.target.value)}
+                                        placeholder="Enter document name"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        Upload File <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="file"
+                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        onChange={handleFileChange}
+                                        accept=".pdf,.docx,.jpg,.jpeg"
+                                        required
+                                    />
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        Allowed formats: PDF, DOCX, JPG (Max size: 10MB)
+                                    </p>
+                                    {selectedFile && (
+                                        <div className="mt-3 flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                            <Check className="h-5 w-5 text-green-600" />
+                                            <span className="text-sm text-green-800">
+                                                {selectedFile.name} ({formatFileSize(selectedFile.size)})
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        Applicable Date <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        value={applicableDate}
+                                        onChange={(e) => setApplicableDate(e.target.value)}
+                                        required
+                                    />
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        Required: Select when this new version becomes applicable
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-foreground mb-2">
+                                        Comments
+                                    </label>
+                                    <textarea
+                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                                        rows="3"
+                                        value={comments}
+                                        onChange={(e) => setComments(e.target.value)}
+                                        placeholder="Add any comments about this version..."
+                                    />
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        Optional: Add any relevant comments about this version
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-3 p-6 border-t border-border bg-muted/30">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowVersionModal(false)}
+                                    disabled={loading}
+                                    className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loading || !selectedFile || !documentName}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                                >
+                                    {loading ? 'Uploading Version...' : 'Upload New Version'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Version History Modal */}
+            {showHistoryModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowHistoryModal(false)}>
+                    <div className="bg-card rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-border">
+                            <div>
+                                <h2 className="text-2xl font-bold text-foreground">Version History</h2>
+                                {selectedDocumentForVersion && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Document: {selectedDocumentForVersion.name}
+                                    </p>
+                                )}
+                            </div>
+                            <button onClick={() => setShowHistoryModal(false)} className="p-2 hover:bg-muted rounded-lg transition-colors">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="relative border-l-2 border-muted ml-3 space-y-8">
+                                {versions.map((version, index) => (
+                                    <div key={version._id} className="relative pl-8">
+                                        {/* Timeline dot */}
+                                        <div className={`absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 ${index === 0 ? 'bg-blue-600 border-blue-600' : 'bg-card border-muted-foreground'}`}></div>
+
+                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 bg-muted/30 p-4 rounded-lg">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-semibold text-foreground">Version {version.version}</span>
+                                                    {version.isLatestVersion && (
+                                                        <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full font-medium">Latest</span>
+                                                    )}
+                                                    {getStatusBadge(version.status)}
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mb-2">
+                                                    Uploaded by {version.uploadedBy?.name} on {formatDate(version.createdAt)}
+                                                </p>
+                                                {version.comments && (
+                                                    <div className="text-sm text-foreground mb-2">
+                                                        <span className="font-semibold">Comments:</span> {version.comments}
+                                                    </div>
+                                                )}
+                                                {version.feedback && (
+                                                    <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                                                        <span className="font-semibold">Feedback:</span> {version.feedback}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                onClick={() => handleDownloadDocument(version)}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-border rounded-lg text-sm hover:bg-gray-50 transition-colors shadow-sm"
+                                            >
+                                                <Download className="h-4 w-4" />
+                                                Download
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {versions.length === 0 && (
+                                    <p className="text-center text-muted-foreground py-4">No version history found.</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

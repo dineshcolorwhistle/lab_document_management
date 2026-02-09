@@ -8,10 +8,12 @@ export default function NotificationsPage() {
     const [loading, setLoading] = useState(false)
     const [filter, setFilter] = useState('all') // 'all', 'unread'
     const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 })
+    const [selectedIds, setSelectedIds] = useState(new Set())
     const navigate = useNavigate()
 
     useEffect(() => {
         fetchNotifications()
+        setSelectedIds(new Set())
     }, [filter, pagination.page])
 
     const fetchNotifications = async () => {
@@ -54,6 +56,7 @@ export default function NotificationsPage() {
         }
     }
 
+
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this notification?')) {
             return
@@ -62,8 +65,45 @@ export default function NotificationsPage() {
         try {
             await notificationService.deleteNotification(id)
             setNotifications(notifications.filter(n => n._id !== id))
+            const newSelected = new Set(selectedIds)
+            newSelected.delete(id)
+            setSelectedIds(newSelected)
         } catch (error) {
             console.error('Error deleting notification:', error)
+        }
+    }
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return
+
+        if (!window.confirm(`Are you sure you want to delete ${selectedIds.size} notifications?`)) {
+            return
+        }
+
+        try {
+            await notificationService.deleteNotifications(Array.from(selectedIds))
+            setNotifications(notifications.filter(n => !selectedIds.has(n._id)))
+            setSelectedIds(new Set())
+        } catch (error) {
+            console.error('Error deleting notifications:', error)
+        }
+    }
+
+    const toggleSelection = (id) => {
+        const newSelected = new Set(selectedIds)
+        if (newSelected.has(id)) {
+            newSelected.delete(id)
+        } else {
+            newSelected.add(id)
+        }
+        setSelectedIds(newSelected)
+    }
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(new Set(notifications.map(n => n._id)))
+        } else {
+            setSelectedIds(new Set())
         }
     }
 
@@ -126,26 +166,51 @@ export default function NotificationsPage() {
                 )}
             </div>
 
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-4 border-b border-border">
-                <button
-                    onClick={() => setFilter('all')}
-                    className={`px-4 py-2 font-medium transition-colors border-b-2 ${filter === 'all'
+            {/* Filter Tabs and Actions */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 sm:pb-0">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-2 font-medium transition-colors border-b-2 -mb-[1px] ${filter === 'all'
                             ? 'border-blue-600 text-blue-600'
                             : 'border-transparent text-muted-foreground hover:text-foreground'
-                        }`}
-                >
-                    All
-                </button>
-                <button
-                    onClick={() => setFilter('unread')}
-                    className={`px-4 py-2 font-medium transition-colors border-b-2 ${filter === 'unread'
+                            }`}
+                    >
+                        All
+                    </button>
+                    <button
+                        onClick={() => setFilter('unread')}
+                        className={`px-4 py-2 font-medium transition-colors border-b-2 -mb-[1px] ${filter === 'unread'
                             ? 'border-blue-600 text-blue-600'
                             : 'border-transparent text-muted-foreground hover:text-foreground'
-                        }`}
-                >
-                    Unread {unreadCount > 0 && `(${unreadCount})`}
-                </button>
+                            }`}
+                    >
+                        Unread {unreadCount > 0 && `(${unreadCount})`}
+                    </button>
+                </div>
+
+                {notifications.length > 0 && (
+                    <div className="flex items-center gap-4 px-4 sm:px-0 pb-2 sm:pb-2">
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="checkbox"
+                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                checked={notifications.length > 0 && selectedIds.size === notifications.length}
+                                onChange={handleSelectAll}
+                            />
+                            <span className="text-sm text-foreground">Select All</span>
+                        </div>
+                        {selectedIds.size > 0 && (
+                            <button
+                                onClick={handleBulkDelete}
+                                className="flex items-center gap-2 px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                Delete ({selectedIds.size})
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Notifications List */}
@@ -178,7 +243,17 @@ export default function NotificationsPage() {
                                     className={`p-6 hover:bg-muted/50 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50/50' : ''
                                         }`}
                                 >
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-4 items-start">
+                                        {/* Checkbox */}
+                                        <div onClick={(e) => e.stopPropagation()} className="pt-4">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                                checked={selectedIds.has(notification._id)}
+                                                onChange={() => toggleSelection(notification._id)}
+                                            />
+                                        </div>
+
                                         {/* Icon */}
                                         <div className={`flex-shrink-0 w-12 h-12 rounded-full ${iconData.bg} flex items-center justify-center`}>
                                             <Icon className={`h-6 w-6 ${iconData.color}`} />

@@ -13,7 +13,9 @@ export default function AdminDocumentsPage() {
     })
     const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 })
     const [showReviewModal, setShowReviewModal] = useState(false)
+    const [showHistoryModal, setShowHistoryModal] = useState(false)
     const [selectedDocument, setSelectedDocument] = useState(null)
+    const [versions, setVersions] = useState([])
     const [reviewAction, setReviewAction] = useState('') // 'APPROVED' or 'REJECTED'
     const [feedback, setFeedback] = useState('')
     const [submitting, setSubmitting] = useState(false)
@@ -42,6 +44,19 @@ export default function AdminDocumentsPage() {
             console.error('Error fetching documents:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+
+    const handleViewHistory = async (doc) => {
+        try {
+            const response = await documentService.getDocumentVersionHistory(doc._id)
+            setVersions(response.data || [])
+            setSelectedDocument(doc)
+            setShowHistoryModal(true)
+        } catch (error) {
+            console.error('Error fetching version history:', error)
+            alert('Failed to load version history')
         }
     }
 
@@ -250,7 +265,10 @@ export default function AdminDocumentsPage() {
                                                 <div className="flex items-start gap-2">
                                                     <FileText className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
                                                     <div className="min-w-0">
-                                                        <div className="font-medium text-foreground">{doc.name}</div>
+                                                        <div className="font-medium text-foreground">
+                                                            {doc.name}
+                                                            <span className="text-xs text-muted-foreground ml-2 border border-border px-1.5 py-0.5 rounded-full">v{doc.version}</span>
+                                                        </div>
                                                         {doc.applicableDate && (
                                                             <div className="text-xs text-muted-foreground mt-1">
                                                                 Applicable: {formatDate(doc.applicableDate)}
@@ -305,6 +323,13 @@ export default function AdminDocumentsPage() {
                                             </td>
                                             <td className="py-4 px-4">
                                                 <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleViewHistory(doc)}
+                                                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                                                        title="View Version History"
+                                                    >
+                                                        <History className="h-5 w-5" />
+                                                    </button>
                                                     <button
                                                         onClick={() => handleDownloadDocument(doc)}
                                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -432,6 +457,75 @@ export default function AdminDocumentsPage() {
                             >
                                 {submitting ? 'Submitting...' : reviewAction === 'APPROVED' ? 'Approve Document' : 'Reject Document'}
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {/* Version History Modal */}
+            {showHistoryModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowHistoryModal(false)}>
+                    <div className="bg-card rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-6 border-b border-border">
+                            <div>
+                                <h2 className="text-2xl font-bold text-foreground">Version History</h2>
+                                {selectedDocument && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Document: {selectedDocument.name}
+                                    </p>
+                                )}
+                            </div>
+                            <button onClick={() => setShowHistoryModal(false)} className="p-2 hover:bg-muted rounded-lg transition-colors">
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="relative border-l-2 border-muted ml-3 space-y-8">
+                                {versions.map((version, index) => (
+                                    <div key={version._id} className="relative pl-8">
+                                        {/* Timeline dot */}
+                                        <div className={`absolute -left-[9px] top-0 h-4 w-4 rounded-full border-2 ${index === 0 ? 'bg-blue-600 border-blue-600' : 'bg-card border-muted-foreground'}`}></div>
+
+                                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 bg-muted/30 p-4 rounded-lg">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-semibold text-foreground">Version {version.version}</span>
+                                                    {version.isLatestVersion && (
+                                                        <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full font-medium">Latest</span>
+                                                    )}
+                                                    {getStatusBadge(version.status)}
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mb-2">
+                                                    Uploaded by {version.uploadedBy?.name} on {formatDate(version.createdAt)}
+                                                </p>
+                                                {version.comments && (
+                                                    <div className="text-sm text-foreground mb-2">
+                                                        <span className="font-semibold">Comments:</span> {version.comments}
+                                                    </div>
+                                                )}
+                                                {version.feedback && (
+                                                    <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
+                                                        <span className="font-semibold">Feedback:</span> {version.feedback}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <button
+                                                onClick={() => handleDownloadDocument(version)}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-white border border-border rounded-lg text-sm hover:bg-gray-50 transition-colors shadow-sm"
+                                            >
+                                                <Download className="h-4 w-4" />
+                                                Download
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {versions.length === 0 && (
+                                    <p className="text-center text-muted-foreground py-4">No version history found.</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

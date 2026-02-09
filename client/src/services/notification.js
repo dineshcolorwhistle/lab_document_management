@@ -25,6 +25,12 @@ export const notificationService = {
         return response.data
     },
 
+    // Bulk delete notifications
+    deleteNotifications: async (ids) => {
+        const response = await api.post('/notifications/bulk-delete', { ids })
+        return response.data
+    },
+
     // Delete notification
     deleteNotification: async (id) => {
         const response = await api.delete(`/notifications/${id}`)
