@@ -36,35 +36,35 @@ pipeline {
             }
         }
 
-        stage('Deploy to Server') {
+        // =========================
+        // STAGING DEPLOY (main)
+        // =========================
+        stage('Deploy to Server (STAGING)') {
+            when {
+                branch 'main'
+            }
+
             steps {
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
                     ssh -o StrictHostKeyChecking=no admin@srv648489 "
                         set -e
 
-                        # Ensure repo is trusted
                         git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
-                        # Go to project directory
                         cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
-                        # Update code
                         git fetch origin
                         git reset --hard origin/main
 
-                        # Build client
                         npm --prefix client install
                         npm --prefix client run build
 
-                        # Install server deps
                         npm --prefix server install
 
-                        # Move client build
                         rm -rf client/public/*
                         cp -r client/dist/* client/public/
 
-                        # PM2: restart if exists, otherwise start
                         pm2 describe lab-doc-api >/dev/null 2>&1 && \
                         pm2 reload ecosystem.config.js --only lab-doc-api --update-env || \
                         pm2 start ecosystem.config.js --only lab-doc-api
@@ -76,6 +76,45 @@ pipeline {
             }
         }
 
+        // =========================
+        // PRODUCTION DEPLOY
+        // =========================
+        stage('Deploy to Server (PRODUCTION)') {
+            when {
+                branch 'Production'
+            }
+
+            steps {
+                sshagent(credentials: ['prod-vps-ssh']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no prod-admin@srv648489 "
+                        set -e
+
+                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document-production.eduwhistle.com/lab_document_management
+
+                        cd /home/eduwhistle-lab-document/htdocs/lab-document-production.eduwhistle.com/lab_document_management
+
+                        git fetch origin
+                        git reset --hard origin/Production
+
+                        npm --prefix client install
+                        npm --prefix client run build
+
+                        npm --prefix server install
+
+                        rm -rf client/public/*
+                        cp -r client/dist/* client/public/
+
+                        pm2 describe lab-doc-api >/dev/null 2>&1 && \
+                        pm2 reload ecosystem.config.js --only lab-doc-api --update-env || \
+                        pm2 start ecosystem.config.js --only lab-doc-api
+
+                        pm2 save
+                    "
+                    '''
+                }
+            }
+        }
 
     }
 
