@@ -90,9 +90,9 @@ pipeline {
                     ssh -o StrictHostKeyChecking=no prod-admin@srv648489 "
                         set -e
 
-                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document-production.eduwhistle.com/lab_document_management
+                        git config --global --add safe.directory /home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management
 
-                        cd /home/eduwhistle-lab-document/htdocs/lab-document-production.eduwhistle.com/lab_document_management
+                        cd /home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management
 
                         git fetch origin
                         git reset --hard origin/Production
