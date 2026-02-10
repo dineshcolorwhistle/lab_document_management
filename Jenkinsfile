@@ -66,8 +66,8 @@ pipeline {
                         cp -r client/dist/* client/public/
 
                         pm2 describe lab-doc-api >/dev/null 2>&1 && \
-                        pm2 reload ecosystem.config.js --only lab-doc-api --update-env || \
-                        pm2 start ecosystem.config.js --only lab-doc-api
+                        pm2 reload ecosystem.config.js --only lab-doc-api --env staging --update-env || \
+                        pm2 start ecosystem.config.js --only lab-doc-api --env staging
 
                         pm2 save
                     "
@@ -106,8 +106,8 @@ pipeline {
                         cp -r client/dist/* client/public/
 
                         pm2 describe lab-doc-api >/dev/null 2>&1 && \
-                        pm2 reload ecosystem.config.js --only lab-doc-api --update-env || \
-                        pm2 start ecosystem.config.js --only lab-doc-api
+                        pm2 reload ecosystem.config.js --only lab-doc-api --env production --update-env || \
+                        pm2 start ecosystem.config.js --only lab-doc-api --env production
 
                         pm2 save
                     "
