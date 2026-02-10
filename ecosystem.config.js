@@ -3,15 +3,18 @@ module.exports = {
     {
       name: "lab-doc-api",
       script: "server/src/server.js",
-      instances: 1,              // or "max" later
-      exec_mode: "fork",         // switch to cluster when ready
-      watch: false,              // NEVER true in production
+      instances: 1,
+      exec_mode: "fork",
+      watch: false,
       autorestart: true,
       max_memory_restart: "500M",
-      wait_ready: true,
-      listen_timeout: 10000,
 
-      env: {
+      env_staging: {
+        NODE_ENV: "staging",
+        PORT: 3071
+      },
+
+      env_production: {
         NODE_ENV: "production",
         PORT: 7001
       }
