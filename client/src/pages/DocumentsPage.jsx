@@ -502,7 +502,7 @@ export default function DocumentsPage() {
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-muted-foreground"
                                         value={documentName}
                                         onChange={(e) => setDocumentName(e.target.value)}
                                         placeholder="Enter document name"
@@ -515,7 +515,7 @@ export default function DocumentsPage() {
                                         Select Machine Instance <span className="text-red-500">*</span>
                                     </label>
                                     <select
-                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                         value={selectedMachineInstance}
                                         onChange={handleMachineInstanceChange}
                                         required
@@ -535,7 +535,7 @@ export default function DocumentsPage() {
                                             Select Document Template <span className="text-red-500">*</span>
                                         </label>
                                         <select
-                                            className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                            className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                             value={selectedTemplate}
                                             onChange={(e) => setSelectedTemplate(e.target.value)}
                                             required
@@ -557,7 +557,7 @@ export default function DocumentsPage() {
                                         </label>
                                         <input
                                             type="file"
-                                            className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                            className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                             onChange={handleFileChange}
                                             accept=".pdf,.docx,.jpg,.jpeg"
                                             required
@@ -584,8 +584,9 @@ export default function DocumentsPage() {
                                             </label>
                                             <input
                                                 type="date"
-                                                className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                                className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer"
                                                 value={applicableDate}
+                                                onClick={(e) => e.target.showPicker()}
                                                 onChange={(e) => setApplicableDate(e.target.value)}
                                                 required
                                             />
@@ -599,7 +600,7 @@ export default function DocumentsPage() {
                                                 Comments
                                             </label>
                                             <textarea
-                                                className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                                                className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none placeholder:text-muted-foreground"
                                                 rows="3"
                                                 value={comments}
                                                 onChange={(e) => setComments(e.target.value)}
@@ -659,7 +660,7 @@ export default function DocumentsPage() {
                                     </label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-muted-foreground"
                                         value={documentName}
                                         onChange={(e) => setDocumentName(e.target.value)}
                                         placeholder="Enter document name"
@@ -673,7 +674,7 @@ export default function DocumentsPage() {
                                     </label>
                                     <input
                                         type="file"
-                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                                        className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                         onChange={handleFileChange}
                                         accept=".pdf,.docx,.jpg,.jpeg"
                                         required
@@ -697,8 +698,9 @@ export default function DocumentsPage() {
                                     </label>
                                     <input
                                         type="date"
-                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all cursor-pointer"
                                         value={applicableDate}
+                                        onClick={(e) => e.target.showPicker()}
                                         onChange={(e) => setApplicableDate(e.target.value)}
                                         required
                                     />
@@ -706,13 +708,12 @@ export default function DocumentsPage() {
                                         Required: Select when this new version becomes applicable
                                     </p>
                                 </div>
-
                                 <div>
                                     <label className="block text-sm font-medium text-foreground mb-2">
                                         Comments
                                     </label>
                                     <textarea
-                                        className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                                        className="w-full px-4 py-2 bg-background text-foreground border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none placeholder:text-muted-foreground"
                                         rows="3"
                                         value={comments}
                                         onChange={(e) => setComments(e.target.value)}

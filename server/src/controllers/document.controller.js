@@ -238,6 +238,10 @@ exports.getMyDocuments = async (req, res, next) => {
             query.documentTemplate = documentTemplateId
         }
 
+        if (req.query.status) {
+            query.status = req.query.status
+        }
+
         const skip = (parseInt(page) - 1) * parseInt(limit)
 
         const [documents, total] = await Promise.all([
