@@ -1,0 +1,134 @@
+  console.error
+    Jest encountered an unexpected token
+    
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+    
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+    
+    By default "node_modules" folder is ignored by transformers.
+    
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+    
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+    
+    Details:
+    
+    C:\lab_document_management\server\node_modules\uuid\dist-node\index.js:1
+    export { default as MAX } from './max.js';
+    ^^^^^^
+    
+    SyntaxError: Unexpected token 'export'
+        at internalCompileFunction (node:internal/vm:137:18)
+        at compileFunction (node:vm:365:10)
+        at Runtime.createScriptFromCode (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:1318:40)
+        at Runtime._execModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:1244:35)
+        at Runtime._loadModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:944:12)
+        at Runtime.requireModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:832:12)
+        at Runtime.requireModuleOrMock (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:964:21)
+        at Object.require (C:\lab_document_management\server\src\middlewares\upload.js:4:24)
+        at Runtime._execModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:1268:24)
+        at Runtime._loadModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:944:12)
+        at Runtime.requireModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:832:12)
+        at Runtime.requireModuleOrMock (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:964:21)
+        at Object.require (C:\lab_document_management\server\src\routes\auth.routes.js:4:32)
+        at Runtime._execModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:1268:24)
+        at Runtime._loadModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:944:12)
+        at Runtime.requireModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:832:12)
+        at Runtime.requireModuleOrMock (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:964:21)
+        at Object.require (C:\lab_document_management\server\src\routes\index.js:3:24)
+        at Runtime._execModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:1268:24)
+        at Runtime._loadModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:944:12)
+        at Runtime.requireModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:832:12)
+        at Runtime.requireModuleOrMock (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:964:21)
+        at Object.require (C:\lab_document_management\server\src\app.js:5:16)
+        at Runtime._execModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:1268:24)
+        at Runtime._loadModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:944:12)
+        at Runtime.requireModule (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:832:12)
+        at Runtime.requireModuleOrMock (C:\lab_document_management\server\node_modules\jest-runtime\build\index.js:964:21)
+        at Object.require (C:\lab_document_management\server\src\__tests__\test_load.js:4:29)
+        at Promise.finally.completed (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:1557:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:1497:10)
+        at _callCircusTest (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:1007:40)
+        at _runTest (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:947:3)
+        at C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:849:7
+        at _runTestsForDescribeBlock (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:862:11)
+        at _runTestsForDescribeBlock (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:857:11)
+        at run (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:761:3)
+        at runAndTransformResultsToJestFormat (C:\lab_document_management\server\node_modules\jest-circus\build\jestAdapterInit.js:1918:21)
+        at jestAdapter (C:\lab_document_management\server\node_modules\jest-circus\build\runner.js:101:19)
+        at runTestInternal (C:\lab_document_management\server\node_modules\jest-runner\build\index.js:275:16)
+        at runTest (C:\lab_document_management\server\node_modules\jest-runner\build\index.js:343:7)
+
+    [0m [90m  5 |[39m             expect(app)[33m.[39mtoBeDefined()[33m;[39m
+     [90m  6 |[39m         } [36mcatch[39m (e) {
+    [31m[1m>[22m[39m[90m  7 |[39m             console[33m.[39merror(e)[33m;[39m
+     [90m    |[39m                     [31m[1m^[22m[39m
+     [90m  8 |[39m             [36mthrow[39m e[33m;[39m
+     [90m  9 |[39m         }
+     [90m 10 |[39m     })[33m;[39m[0m
+
+      at Object.error (src/__tests__/test_load.js:7:21)
+
+FAIL src/__tests__/test_load.js
+  Environment check
+    × should be able to require app (1361 ms)
+
+  ● Environment check › should be able to require app
+
+    Jest encountered an unexpected token
+
+    Jest failed to parse a file. This happens e.g. when your code or its dependencies use non-standard JavaScript syntax, or when Jest is not configured to support such syntax.
+
+    Out of the box Jest supports Babel, which will be used to transform your files into valid JS based on your Babel configuration.
+
+    By default "node_modules" folder is ignored by transformers.
+
+    Here's what you can do:
+     • If you are trying to use ECMAScript Modules, see https://jestjs.io/docs/ecmascript-modules for how to enable it.
+     • If you are trying to use TypeScript, see https://jestjs.io/docs/getting-started#using-typescript
+     • To have some of your "node_modules" files transformed, you can specify a custom "transformIgnorePatterns" in your config.
+     • If you need a custom transformation, specify a "transform" option in your config.
+     • If you simply want to mock your non-JS modules (e.g. binary assets) you can stub them out with the "moduleNameMapper" config option.
+
+    You'll find more details and examples of these config options in the docs:
+    https://jestjs.io/docs/configuration
+    For information about custom transformations, see:
+    https://jestjs.io/docs/code-transformation
+
+    Details:
+
+    C:\lab_document_management\server\node_modules\uuid\dist-node\index.js:1
+    export { default as MAX } from './max.js';
+    ^^^^^^
+
+    SyntaxError: Unexpected token 'export'
+
+    [0m [90m 2 |[39m [36mconst[39m path [33m=[39m require([32m'path'[39m)
+     [90m 3 |[39m [36mconst[39m fs [33m=[39m require([32m'fs'[39m)
+    [31m[1m>[22m[39m[90m 4 |[39m [36mconst[39m { v4[33m:[39m uuidv4 } [33m=[39m require([32m'uuid'[39m)
+     [90m   |[39m                        [31m[1m^[22m[39m
+     [90m 5 |[39m [36mconst[39m { [33mAppError[39m } [33m=[39m require([32m'../utils/AppError'[39m)
+     [90m 6 |[39m
+     [90m 7 |[39m [36mconst[39m storage [33m=[39m multer[33m.[39mdiskStorage({[0m
+
+      at Runtime.createScriptFromCode (node_modules/jest-runtime/build/index.js:1318:40)
+      at Object.require (src/middlewares/upload.js:4:24)
+      at Object.require (src/routes/auth.routes.js:4:32)
+      at Object.require (src/routes/index.js:3:24)
+      at Object.require (src/app.js:5:16)
+      at Object.require (src/__tests__/test_load.js:4:29)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        1.862 s, estimated 2 s
+Ran all test suites matching src/__tests__/test_load.js.
