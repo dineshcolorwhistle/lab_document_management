@@ -3,6 +3,7 @@ pipeline {
 
     options {
         timestamps()
+        disableConcurrentBuilds()
     }
 
     environment {
@@ -11,38 +12,75 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
+        // ======================
+        // CHECKOUT
+        // ======================
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Install Server Dependencies') {
+        // ======================
+        // SERVER INSTALL
+        // ======================
+        stage('Install Server Deps') {
             steps {
                 dir('server') {
-                    sh 'npm install'
+                    sh 'npm ci'
                 }
             }
         }
 
+        // ======================
+        // CLIENT INSTALL
+        // ======================
+        stage('Install Client Deps') {
+            steps {
+                dir('client') {
+                    sh 'npm ci'
+                }
+            }
+        }
+
+        // ======================
+        // SERVER TESTS
+        // ======================
+        stage('Server Tests') {
+            steps {
+                dir('server') {
+                    sh 'npm test'
+                }
+            }
+        }
+
+        // ======================
+        // CLIENT TESTS
+        // ======================
+        stage('Client Tests') {
+            steps {
+                dir('client') {
+                    sh 'npm test -- --watchAll=false'
+                }
+            }
+        }
+
+        // ======================
+        // CLIENT BUILD
+        // ======================
         stage('Build Client') {
             steps {
                 dir('client') {
-                    sh '''
-                      npm install --include=dev
-                      npm run build
-                    '''
+                    sh 'npm run build'
                 }
             }
         }
 
-        // =========================
-        // STAGING DEPLOY (main)
-        // =========================
-        stage('Deploy to Server (STAGING)') {
-            when {
-                branch 'main'
-            }
+        // ======================
+        // STAGING DEPLOY
+        // ======================
+        stage('Deploy STAGING') {
+            when { branch 'main' }
 
             steps {
                 sshagent(credentials: ['prod-vps-ssh']) {
@@ -50,23 +88,19 @@ pipeline {
                     ssh -o StrictHostKeyChecking=no admin@srv648489 "
                         set -e
 
-                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
-
                         cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
                         git fetch origin
                         git reset --hard origin/main
 
-                        npm --prefix client install
+                        npm --prefix server ci
+                        npm --prefix client ci
                         npm --prefix client run build
-
-                        npm --prefix server install
 
                         rm -rf client/public/*
                         cp -r client/dist/* client/public/
 
-                        pm2 describe lab-doc-api >/dev/null 2>&1 && \
-                        pm2 reload ecosystem.config.js --only lab-doc-api --env staging --update-env || \
+                        pm2 reload ecosystem.config.js --only lab-doc-api --env staging || \
                         pm2 start ecosystem.config.js --only lab-doc-api --env staging
 
                         pm2 save
@@ -76,13 +110,11 @@ pipeline {
             }
         }
 
-        // =========================
+        // ======================
         // PRODUCTION DEPLOY
-        // =========================
-        stage('Deploy to Server (PRODUCTION)') {
-            when {
-                branch 'Production'
-            }
+        // ======================
+        stage('Deploy PRODUCTION') {
+            when { branch 'Production' }
 
             steps {
                 sshagent(credentials: ['prod-vps-ssh']) {
@@ -90,23 +122,19 @@ pipeline {
                     ssh -o StrictHostKeyChecking=no prod-admin@srv648489 "
                         set -e
 
-                        git config --global --add safe.directory /home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management
-
                         cd /home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management
 
                         git fetch origin
                         git reset --hard origin/Production
 
-                        npm --prefix client install
+                        npm --prefix server ci
+                        npm --prefix client ci
                         npm --prefix client run build
-
-                        npm --prefix server install
 
                         rm -rf client/public/*
                         cp -r client/dist/* client/public/
 
-                        pm2 describe lab-doc-api >/dev/null 2>&1 && \
-                        pm2 reload ecosystem.config.js --only lab-doc-api --env production --update-env || \
+                        pm2 reload ecosystem.config.js --only lab-doc-api --env production || \
                         pm2 start ecosystem.config.js --only lab-doc-api --env production
 
                         pm2 save
@@ -116,14 +144,24 @@ pipeline {
             }
         }
 
+        // ======================
+        // HEALTH CHECK
+        // ======================
+        stage('Health Check') {
+            steps {
+                sh '''
+                curl -f https://lab-document.eduwhistle.com/health || exit 1
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo '✅ Deployment completed successfully'
+            echo '✅ Build, Test & Deploy successful'
         }
         failure {
-            echo '❌ Deployment failed'
+            echo '❌ Pipeline failed — deployment stopped'
         }
     }
 }
