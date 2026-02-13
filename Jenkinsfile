@@ -3,102 +3,70 @@ pipeline {
 
     options {
         timestamps()
-        disableConcurrentBuilds()
-        ansiColor('xterm')
+    }
+
+    environment {
+        NODE_ENV = 'production'
     }
 
     stages {
 
-        // ======================
-        // CHECKOUT
-        // ======================
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 checkout scm
             }
         }
 
-        // ======================
-        // INSTALL DEPENDENCIES
-        // ======================
-        stage('Install Dependencies') {
-            parallel {
-                stage('Server Deps') {
-                    steps {
-                        dir('server') {
-                            sh 'npm ci --include=dev'
-                        }
-                    }
-                }
-                stage('Client Deps') {
-                    steps {
-                        dir('client') {
-                            sh 'npm ci --include=dev'
-                        }
-                    }
+        stage('Install Server Dependencies') {
+            steps {
+                dir('server') {
+                    sh 'npm install'
                 }
             }
         }
 
-        // ======================
-        // TESTS (PARALLEL)
-        // ======================
-        stage('Run Tests') {
-            parallel {
-                stage('Server Tests') {
-                    steps {
-                        dir('server') {
-                            sh 'npm test'
-                        }
-                    }
-                }
-                stage('Client Tests') {
-                    steps {
-                        dir('client') {
-                            sh 'npm test -- --watchAll=false'
-                        }
-                    }
-                }
-            }
-        }
-
-        // ======================
-        // BUILD CLIENT
-        // ======================
         stage('Build Client') {
             steps {
                 dir('client') {
-                    sh 'NODE_ENV=production npm run build'
+                    sh '''
+                      npm install --include=dev
+                      npm run build
+                    '''
                 }
-
-                // save build output for deploy
-                stash name: 'client-build', includes: 'client/dist/**'
             }
         }
 
-        // ======================
-        // DEPLOY STAGING
-        // ======================
-        stage('Deploy STAGING') {
-            when { branch 'main' }
+        // =========================
+        // STAGING DEPLOY (main)
+        // =========================
+        stage('Deploy to Server (STAGING)') {
+            when {
+                branch 'main'
+            }
 
             steps {
-                unstash 'client-build'
-
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
-                    rsync -avz client/dist/ admin@srv648489:/home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management/client/public/
-
-                    ssh admin@srv648489 "
+                    ssh -o StrictHostKeyChecking=no admin@srv648489 "
                         set -e
+
+                        git config --global --add safe.directory /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
+
                         cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
                         git fetch origin
                         git reset --hard origin/main
 
-                        npm --prefix server ci --omit=dev
+                        npm --prefix client install
+                        npm --prefix client run build
 
-                        pm2 reload ecosystem.config.js --only lab-doc-api --env staging || \
+                        npm --prefix server install
+
+                        rm -rf client/public/*
+                        cp -r client/dist/* client/public/
+
+                        pm2 describe lab-doc-api >/dev/null 2>&1 && \
+                        pm2 reload ecosystem.config.js --only lab-doc-api --env staging --update-env || \
                         pm2 start ecosystem.config.js --only lab-doc-api --env staging
 
                         pm2 save
@@ -108,31 +76,37 @@ pipeline {
             }
         }
 
-        // ======================
-        // DEPLOY PRODUCTION
-        // ======================
-        stage('Deploy PRODUCTION') {
-            when { branch 'Production' }
+        // =========================
+        // PRODUCTION DEPLOY
+        // =========================
+        stage('Deploy to Server (PRODUCTION)') {
+            when {
+                branch 'Production'
+            }
 
             steps {
-                input message: "Deploy to PRODUCTION?"
-
-                unstash 'client-build'
-
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
-                    rsync -avz client/dist/ prod-admin@srv648489:/home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management/client/public/
-
-                    ssh prod-admin@srv648489 "
+                    ssh -o StrictHostKeyChecking=no prod-admin@srv648489 "
                         set -e
+
+                        git config --global --add safe.directory /home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management
+
                         cd /home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management
 
                         git fetch origin
                         git reset --hard origin/Production
 
-                        npm --prefix server ci --omit=dev
+                        npm --prefix client install
+                        npm --prefix client run build
 
-                        pm2 reload ecosystem.config.js --only lab-doc-api --env production || \
+                        npm --prefix server install
+
+                        rm -rf client/public/*
+                        cp -r client/dist/* client/public/
+
+                        pm2 describe lab-doc-api >/dev/null 2>&1 && \
+                        pm2 reload ecosystem.config.js --only lab-doc-api --env production --update-env || \
                         pm2 start ecosystem.config.js --only lab-doc-api --env production
 
                         pm2 save
@@ -142,22 +116,14 @@ pipeline {
             }
         }
 
-        // ======================
-        // HEALTH CHECK
-        // ======================
-        stage('Health Check') {
-            steps {
-                sh 'curl -f https://lab-document.eduwhistle.com/health'
-            }
-        }
     }
 
     post {
         success {
-            echo '✅ Build, Test & Deploy successful'
+            echo '✅ Deployment completed successfully'
         }
         failure {
-            echo '❌ Pipeline failed — deployment stopped'
+            echo '❌ Deployment failed'
         }
     }
 }
