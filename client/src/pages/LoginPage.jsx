@@ -71,7 +71,7 @@ export function LoginPage() {
           <Link className="font-medium text-[#352D36] underline-offset-4 hover:underline" to="/forgot-password">
             Forgot password?
           </Link>
-          <span className="text-xs text-[#909493]">Secure access with RBAC is test</span>
+          <span className="text-xs text-[#909493]">Secure access with RBAC</span>
         </div>
       </form>
     </AuthShell>

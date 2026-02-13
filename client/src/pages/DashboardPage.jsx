@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useLab } from '../contexts/LabContext'
+import { ROLES } from '../constants/roles'
+import { documentService } from '../services/document'
+import { listMachineTypes } from '../services/machineType'
+import { listMachineInstances } from '../services/machineInstance'
 import {
   FlaskConical,
   FileText,
@@ -7,6 +13,10 @@ import {
   AlertTriangle,
   TrendingUp,
   Clock,
+  Upload,
+  Server,
+  Activity,
+  ChevronRight
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -19,6 +29,7 @@ const StatCard = ({ title, value, icon: Icon, trend, trendLabel, color = 'primar
     amber: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
     red: 'bg-red-500/10 text-red-600 border-red-500/20',
     blue: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    purple: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
   }
 
   return (
@@ -51,34 +62,106 @@ const StatCard = ({ title, value, icon: Icon, trend, trendLabel, color = 'primar
 
 export function DashboardPage() {
   const { user } = useAuth()
+  const { selectedLab } = useLab()
   const [stats, setStats] = useState({
-    totalLabs: 0,
+    // Shared Stats
+    machineTypes: 0,
+    machineInstances: 0,
     pendingDocuments: 0,
     approvedDocuments: 0,
+
+    // Admin/Other roles stats
+    totalLabs: 0,
     expiringDocuments: 0,
+
     loading: true,
   })
+
+  const [recentDocuments, setRecentDocuments] = useState([])
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        setTimeout(() => {
+        if (user?.role === ROLES.LAB_TECHNICIAN) {
+          // Fetch real data for Lab Technician
+          const [
+            machineTypesData,
+            machineInstancesData,
+            pendingDocsData,
+            approvedDocsData,
+            recentDocsData
+          ] = await Promise.all([
+            listMachineTypes({ limit: 1 }), // Just to get total count
+            listMachineInstances({ limit: 1 }), // Just to get total count filtered by rolw
+            documentService.getMyDocuments({ status: 'PENDING', limit: 1 }),
+            documentService.getMyDocuments({ status: 'APPROVED', limit: 1 }),
+            documentService.getMyDocuments({ limit: 5 })
+          ])
+
           setStats({
-            totalLabs: 12,
-            pendingDocuments: 8,
-            approvedDocuments: 145,
-            expiringDocuments: 3,
-            loading: false,
+            machineTypes: machineTypesData.pagination?.total || 0,
+            machineInstances: machineInstancesData.pagination?.total || 0,
+            pendingDocuments: pendingDocsData.pagination?.total || 0,
+            approvedDocuments: approvedDocsData.pagination?.total || 0,
+            loading: false
           })
-        }, 800)
+
+          setRecentDocuments(recentDocsData.data || [])
+        } else if (user?.role === ROLES.LAB_OWNER) {
+          // Fetch real data for Lab Owner
+          // Filter by selectedLab if available
+          const labId = selectedLab?.id
+
+          const [
+            machineTypesData,
+            machineInstancesData,
+            pendingDocsData,
+            approvedDocsData,
+            recentDocsData
+          ] = await Promise.all([
+            listMachineTypes({ limit: 1 }), // Machine Types are global
+            listMachineInstances({ limit: 1, labId }), // Filtered by lab
+            documentService.getLabOwnerDocuments({ status: 'PENDING', limit: 1, labId }),
+            documentService.getLabOwnerDocuments({ status: 'APPROVED', limit: 1, labId }),
+            documentService.getLabOwnerDocuments({ limit: 5, labId })
+          ])
+
+          setStats({
+            machineTypes: machineTypesData.pagination?.total || 0,
+            machineInstances: machineInstancesData.pagination?.total || 0,
+            pendingDocuments: pendingDocsData.pagination?.total || 0,
+            approvedDocuments: approvedDocsData.pagination?.total || 0,
+            loading: false
+          })
+
+          setRecentDocuments(recentDocsData.data || [])
+        } else {
+          // Mock data for other roles
+          setTimeout(() => {
+            setStats({
+              totalLabs: 12,
+              pendingDocuments: 8,
+              approvedDocuments: 145,
+              expiringDocuments: 3,
+              loading: false,
+            })
+            setRecentDocuments([
+              { _id: 1, name: 'Safety Protocol v1.0', updatedAt: new Date(), status: 'APPROVED' },
+              { _id: 2, name: 'Safety Protocol v2.0', updatedAt: new Date(), status: 'APPROVED' },
+              { _id: 3, name: 'Safety Protocol v3.0', updatedAt: new Date(), status: 'APPROVED' }
+            ])
+          }, 800)
+        }
       } catch (error) {
         console.error('Failed to fetch dashboard stats:', error)
         setStats((prev) => ({ ...prev, loading: false }))
       }
     }
 
-    fetchStats()
-  }, [])
+    if (user) {
+      fetchStats()
+    }
+  }, [user, selectedLab])
 
   if (stats.loading) {
     return (
@@ -88,6 +171,136 @@ export function DashboardPage() {
     )
   }
 
+  // Render Dashboard for Lab Technician OR Lab Owner (Shared Design)
+  if (user?.role === ROLES.LAB_TECHNICIAN || user?.role === ROLES.LAB_OWNER) {
+    const isOwner = user?.role === ROLES.LAB_OWNER
+
+    return (
+      <div className="space-y-8 animate-in fade-in duration-500">
+        {/* Welcome Section */}
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            Welcome back, {user?.name}!
+          </h1>
+          <p className="text-muted-foreground">
+            {isOwner && selectedLab
+              ? `Viewing data for: ${selectedLab.name}`
+              : "Here's an overview of your lab activities and documents."}
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="Machine Type"
+            value={stats.machineTypes}
+            icon={Server}
+            color="primary"
+          />
+          <StatCard
+            title="Machine Instance"
+            value={stats.machineInstances}
+            icon={Activity}
+            color="purple"
+          />
+          <StatCard
+            title="Pending Documents"
+            value={stats.pendingDocuments}
+            icon={Clock}
+            color="amber"
+            trendLabel={stats.pendingDocuments > 0 ? "Requires attention" : "All caught up"}
+          />
+          <StatCard
+            title="Approved Documents"
+            value={stats.approvedDocuments}
+            icon={CheckCircle2}
+            color="green"
+          />
+        </div>
+
+        {/* Recent Documents & Quick Actions */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Recent Documents */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-lg font-semibold">Recent Documents</CardTitle>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to={isOwner ? "/lab-owner-documents" : "/documents"}>View all</Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentDocuments.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No recent documents found.</p>
+                ) : (
+                  recentDocuments.map((doc) => (
+                    <div key={doc._id} className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-foreground truncate">{doc.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Updated {doc.updatedAt ? new Date(doc.updatedAt).toLocaleString() : 'Unknown'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={cn(
+                        "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold",
+                        doc.status === 'APPROVED' ? "bg-emerald-500/10 text-emerald-600" :
+                          doc.status === 'REJECTED' ? "bg-red-500/10 text-red-600" :
+                            "bg-amber-500/10 text-amber-600"
+                      )}>
+                        {doc.status}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2.5">
+              <Button variant="outline" className="w-full justify-start h-auto py-3" asChild>
+                <Link to={isOwner ? "/lab-owner-documents" : "/documents"}>
+                  <span className="flex items-center gap-2">
+                    <div className="p-1 bg-primary/10 rounded-md">
+                      {isOwner ? <FileText className="h-4 w-4 text-primary" /> : <Upload className="h-4 w-4 text-primary" />}
+                    </div>
+                    {isOwner ? "View Documents" : "Upload New Document"}
+                  </span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start h-auto py-3" asChild>
+                <Link to="/machine-types">
+                  <span className="flex items-center gap-2">
+                    <div className="p-1 bg-blue-500/10 rounded-md"><Server className="h-4 w-4 text-blue-600" /></div>
+                    Machine Type
+                  </span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start h-auto py-3" asChild>
+                <Link to="/machine-instance-management">
+                  <span className="flex items-center gap-2">
+                    <div className="p-1 bg-purple-500/10 rounded-md"><Activity className="h-4 w-4 text-purple-600" /></div>
+                    Machine Instance
+                  </span>
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Fallback for other roles (Keep existing mock layout)
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Welcome Section */}
