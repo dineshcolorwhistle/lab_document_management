@@ -4,10 +4,7 @@ pipeline {
     options {
         timestamps()
         disableConcurrentBuilds()
-    }
-
-    environment {
-        NODE_ENV = 'production'
+        ansiColor('xterm')
     }
 
     stages {
@@ -22,83 +19,84 @@ pipeline {
         }
 
         // ======================
-        // SERVER INSTALL
+        // INSTALL DEPENDENCIES
         // ======================
-        stage('Install Server Deps') {
-            steps {
-                dir('server') {
-                    sh 'npm ci'
+        stage('Install Dependencies') {
+            parallel {
+                stage('Server Deps') {
+                    steps {
+                        dir('server') {
+                            sh 'npm ci --include=dev'
+                        }
+                    }
+                }
+                stage('Client Deps') {
+                    steps {
+                        dir('client') {
+                            sh 'npm ci --include=dev'
+                        }
+                    }
                 }
             }
         }
 
         // ======================
-        // CLIENT INSTALL
+        // TESTS (PARALLEL)
         // ======================
-        stage('Install Client Deps') {
-            steps {
-                dir('client') {
-                    sh 'npm ci'
+        stage('Run Tests') {
+            parallel {
+                stage('Server Tests') {
+                    steps {
+                        dir('server') {
+                            sh 'npm test'
+                        }
+                    }
+                }
+                stage('Client Tests') {
+                    steps {
+                        dir('client') {
+                            sh 'npm test -- --watchAll=false'
+                        }
+                    }
                 }
             }
         }
 
         // ======================
-        // SERVER TESTS
-        // ======================
-        stage('Server Tests') {
-            steps {
-                dir('server') {
-                    sh 'npm test'
-                }
-            }
-        }
-
-        // ======================
-        // CLIENT TESTS
-        // ======================
-        stage('Client Tests') {
-            steps {
-                dir('client') {
-                    sh 'npm test -- --watchAll=false'
-                }
-            }
-        }
-
-        // ======================
-        // CLIENT BUILD
+        // BUILD CLIENT
         // ======================
         stage('Build Client') {
             steps {
                 dir('client') {
-                    sh 'npm run build'
+                    sh 'NODE_ENV=production npm run build'
                 }
+
+                // save build output for deploy
+                stash name: 'client-build', includes: 'client/dist/**'
             }
         }
 
         // ======================
-        // STAGING DEPLOY
+        // DEPLOY STAGING
         // ======================
         stage('Deploy STAGING') {
             when { branch 'main' }
 
             steps {
+                unstash 'client-build'
+
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no admin@srv648489 "
-                        set -e
+                    rsync -avz client/dist/ admin@srv648489:/home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management/client/public/
 
+                    ssh admin@srv648489 "
+                        set -e
                         cd /home/eduwhistle-lab-document/htdocs/lab-document.eduwhistle.com/lab_document_management
 
                         git fetch origin
                         git reset --hard origin/main
 
-                        npm --prefix server ci
-                        npm --prefix client ci
-                        npm --prefix client run build
-
-                        rm -rf client/public/*
-                        cp -r client/dist/* client/public/
+                        npm --prefix server ci --omit=dev
 
                         pm2 reload ecosystem.config.js --only lab-doc-api --env staging || \
                         pm2 start ecosystem.config.js --only lab-doc-api --env staging
@@ -111,28 +109,28 @@ pipeline {
         }
 
         // ======================
-        // PRODUCTION DEPLOY
+        // DEPLOY PRODUCTION
         // ======================
         stage('Deploy PRODUCTION') {
             when { branch 'Production' }
 
             steps {
+                input message: "Deploy to PRODUCTION?"
+
+                unstash 'client-build'
+
                 sshagent(credentials: ['prod-vps-ssh']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no prod-admin@srv648489 "
-                        set -e
+                    rsync -avz client/dist/ prod-admin@srv648489:/home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management/client/public/
 
+                    ssh prod-admin@srv648489 "
+                        set -e
                         cd /home/eduwhistle-lab-production/htdocs/lab-document-production.eduwhistle.com/lab_document_management
 
                         git fetch origin
                         git reset --hard origin/Production
 
-                        npm --prefix server ci
-                        npm --prefix client ci
-                        npm --prefix client run build
-
-                        rm -rf client/public/*
-                        cp -r client/dist/* client/public/
+                        npm --prefix server ci --omit=dev
 
                         pm2 reload ecosystem.config.js --only lab-doc-api --env production || \
                         pm2 start ecosystem.config.js --only lab-doc-api --env production
@@ -149,9 +147,7 @@ pipeline {
         // ======================
         stage('Health Check') {
             steps {
-                sh '''
-                curl -f https://lab-document.eduwhistle.com/health || exit 1
-                '''
+                sh 'curl -f https://lab-document.eduwhistle.com/health'
             }
         }
     }
